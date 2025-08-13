@@ -142,9 +142,61 @@ const SurveyForm = () => {
     .replace(/_/g, ' ')
     .replace(/\b\w/g, (c) => c.toUpperCase());
 
+  const heLabels: Record<string, string> = {
+    businessName: 'שם העסק',
+    contactName: 'שם איש הקשר',
+    contactRole: 'תפקיד איש הקשר',
+    preferredContact: 'אמצעי קשר מועדף',
+    email: 'אימייל',
+    phone: 'טלפון',
+    address: 'כתובת',
+    website: 'אתר',
+    employeeCount: 'מספר עובדים',
+    partnerCount: 'מספר שותפים',
+    referralSource: 'איך שמעתם עלינו?',
+    businessField: 'תחום העסק',
+    businessAge: 'ותק העסק',
+    howStarted: 'איך התחלתם?',
+    vision: 'חזון',
+    description: 'תיאור העסק',
+    leadership: 'הנהלה',
+    importantInfo: 'מידע חשוב',
+    uniqueness: 'ייחודיות',
+    currentProblems: 'בעיות נוכחיות',
+    timeWasters: 'גורמי בזבוז זמן',
+    leadGoals: 'מטרות לידים',
+    successMetrics: 'מדדי הצלחה',
+    customerService: 'שירות לקוחות',
+    hasEmployees: 'יש עובדים?',
+    inquiryVolume: 'כמות פניות',
+    inquirySources: 'מקורות פניות',
+    hasReps: 'יש נציגים?',
+    commonQuestions: 'שאלות נפוצות',
+    timeConsumingProcesses: 'תהליכים גוזלי זמן',
+    mainChallenge: 'אתגר מרכזי',
+    monthlyLeads: 'לידים בחודש',
+    salesProcess: 'תהליך מכירה',
+    responseTime: 'זמן תגובה',
+    hasKPIs: 'יש KPI?',
+    unclosedLeadsProcess: 'טיפול בלידים שלא נסגרו',
+    hasUpselling: 'יש אפסייל?',
+    upsellingDetails: 'פרטי אפסייל',
+    botGoals: 'מטרות מהבוט',
+    availability: 'זמינות',
+    hasExistingContent: 'תוכן קיים?',
+    existingContentDetails: 'פרטי התוכן הקיים',
+    designPreferences: 'העדפות עיצוב',
+    hasBotExperience: 'ניסיון עם בוטים?',
+    desiredUX: 'חוויית משתמש רצויה',
+  };
+
   const buildHtmlTable = (data: Record<string, string>) => {
     const rows = Object.entries(data)
-      .map(([k, v]) => `<tr><th style="text-align:right;padding:6px;border:1px solid #e5e7eb;background:#f8fafc;">${escapeHtml(humanizeKey(k))}</th><td style="padding:6px;border:1px solid #e5e7eb;">${escapeHtml(v)}</td></tr>`) 
+      .filter(([_, v]) => String(v ?? '').trim() !== '')
+      .map(([k, v]) => {
+        const label = heLabels[k] ?? humanizeKey(k);
+        return `<tr><th style=\"text-align:right;padding:6px;border:1px solid #e5e7eb;background:#f8fafc;\">${escapeHtml(label)}</th><td style=\"padding:6px;border:1px solid #e5e7eb;\">${escapeHtml(v)}</td></tr>`;
+      })
       .join('');
     return `<table dir=\"rtl\" style=\"border-collapse:collapse;width:100%;font-family:Arial,sans-serif;font-size:14px;\">${rows}</table>`;
   };
