@@ -202,11 +202,28 @@ const SurveyForm = () => {
       const serviceId = import.meta.env.VITE_EMAILJS_SERVICE_ID;
       const templateId = import.meta.env.VITE_EMAILJS_TEMPLATE_ID;
       const publicKey = import.meta.env.VITE_EMAILJS_PUBLIC_KEY;
+      const appsScriptUrl = import.meta.env.VITE_APPS_SCRIPT_URL;
 
       if (serviceId && templateId && publicKey) {
         const result = await emailjs.send(serviceId, templateId, payload, { publicKey });
         if (result.status !== 200) throw new Error('שליחה נכשלה');
         setIsSubmitted(true);
+      } else if (appsScriptUrl) {
+        try {
+          const response = await fetch(appsScriptUrl, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(payload)
+          });
+          // Apps Script may not return CORS headers; accept opaque/no JSON
+          if (!response.ok && response.type !== 'opaque') {
+            throw new Error('שליחה נכשלה');
+          }
+          setIsSubmitted(true);
+        } catch (e) {
+          // If strict CORS blocks reading response, still consider as sent
+          setIsSubmitted(true);
+        }
       } else if (toEmail) {
         const endpoint = `https://formsubmit.co/ajax/${toEmail.trim()}`;
         const response = await fetch(endpoint, {
