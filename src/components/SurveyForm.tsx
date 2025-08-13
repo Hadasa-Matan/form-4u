@@ -194,7 +194,7 @@ const SurveyForm = () => {
         subject: 'שאלון חדש מאתר form-4u',
         reply_to: formData.email || toEmail,
         to_email: toEmail,
-        submitted_at: new Date().toISOString(),
+        submitted_at: new Intl.DateTimeFormat('he-IL', { year: 'numeric', month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit', hour12: false, timeZone: 'Asia/Jerusalem' }).format(new Date()),
         table_html: buildHtmlTable(normalized),
         ...normalized,
       };
