@@ -892,8 +892,8 @@ const SurveyForm = () => {
                 onClick={prevStep}
                 className="flex items-center px-6 py-3 text-gray-600 hover:text-gray-800 transition-colors"
               >
-                <ArrowLeft className="w-4 h-4 mr-2" />
                 הקודם
+                <ArrowRight className="w-4 h-4 ml-2" />
               </button>
             ) : (
               <div />
@@ -904,8 +904,8 @@ const SurveyForm = () => {
                 onClick={nextStep}
                 className="flex items-center bg-gradient-to-r from-blue-500 to-indigo-600 text-white px-8 py-3 rounded-lg font-medium hover:from-blue-600 hover:to-indigo-700 transition-all transform hover:scale-105 shadow-md"
               >
+                <ArrowLeft className="w-4 h-4 ml-2" />
                 הבא
-                <ArrowRight className="w-4 h-4 mr-2" />
               </button>
             )}
           </div>
