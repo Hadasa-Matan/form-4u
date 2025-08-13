@@ -3,5 +3,5 @@ import react from '@vitejs/plugin-react';
 
 export default defineConfig({
   plugins: [react()],
-  base: '/form-4u/',
+  base: '/form-4u/', // חשוב ל-GitHub Pages
 });
