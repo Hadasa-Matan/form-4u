@@ -116,7 +116,6 @@ const SurveyForm = () => {
   const [formData, setFormData] = useState<FormData>(initialFormData);
   const [currentStep, setCurrentStep] = useState(1);
   const [isSubmitted, setIsSubmitted] = useState(false);
-  const [isSubmitting, setIsSubmitting] = useState(false);
   const totalSteps = 8;
 
   const handleInputChange = (field: keyof FormData, value: any) => {
@@ -143,41 +142,9 @@ const SurveyForm = () => {
     }
   };
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setIsSubmitting(true);
-
-    try {
-      // יצירת FormData לשליחה ל-Netlify
-      const netlifyFormData = new FormData();
-      netlifyFormData.append('form-name', 'bot-survey');
-      
-      // הוספת כל השדות
-      Object.entries(formData).forEach(([key, value]) => {
-        if (Array.isArray(value)) {
-          netlifyFormData.append(key, value.join(', '));
-        } else {
-          netlifyFormData.append(key, String(value));
-        }
-      });
-
-      const response = await fetch('/', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-        body: new URLSearchParams(netlifyFormData as any).toString()
-      });
-
-      if (response.ok) {
-        setIsSubmitted(true);
-      } else {
-        throw new Error('שגיאה בשליחת הטופס');
-      }
-    } catch (error) {
-      alert('אירעה שגיאה בשליחת הטופס. אנא נסו שוב.');
-      console.error('Error:', error);
-    } finally {
-      setIsSubmitting(false);
-    }
+  const handleSubmit = () => {
+    console.log('Form submitted:', formData);
+    setIsSubmitted(true);
   };
 
   const CheckboxOption = ({ field, value, label }: { field: keyof FormData, value: string, label: string }) => {
@@ -265,7 +232,6 @@ const SurveyForm = () => {
                   onChange={(e) => handleInputChange('businessName', e.target.value)}
                   className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                   placeholder="הזינו את שם העסק"
-                  required
                 />
               </div>
               
@@ -277,7 +243,6 @@ const SurveyForm = () => {
                   onChange={(e) => handleInputChange('contactName', e.target.value)}
                   className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                   placeholder="השם המלא שלכם"
-                  required
                 />
               </div>
               
@@ -309,7 +274,6 @@ const SurveyForm = () => {
                   onChange={(e) => handleInputChange('email', e.target.value)}
                   className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                   placeholder="your@email.com"
-                  required
                 />
               </div>
               
@@ -323,40 +287,14 @@ const SurveyForm = () => {
                   placeholder="050-123-4567"
                 />
               </div>
-              
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">כתובת פיזית של העסק</label>
-                <input
-                  type="text"
-                  value={formData.address}
-                  onChange={(e) => handleInputChange('address', e.target.value)}
-                  className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                  placeholder="רחוב, עיר"
-                />
-              </div>
-              
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">כתובת אתר האינטרנט</label>
-                <input
-                  type="url"
-                  value={formData.website}
-                  onChange={(e) => handleInputChange('website', e.target.value)}
-                  className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                  placeholder="https://www.example.com"
-                />
-              </div>
             </div>
             
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-2">מאיפה שמעתם עלינו?</label>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
                 <RadioOption field="referralSource" value="google" label="🔍 גוגל" />
-                <RadioOption field="referralSource" value="facebook" label="📘 פייסבוק" />
-                <RadioOption field="referralSource" value="instagram" label="📸 אינסטגרם" />
-                <RadioOption field="referralSource" value="linkedin" label="💼 לינקדאין" />
-                <RadioOption field="referralSource" value="youtube" label="📺 יוטיוב" />
                 <RadioOption field="referralSource" value="referral" label="👤 הפניה מחבר/לקוח" />
-                <RadioOption field="referralSource" value="website" label="🌐 האתר שלכם" />
+                <RadioOption field="referralSource" value="website" label="🌐 האתר שלנו" />
                 <RadioOption field="referralSource" value="email" label="📧 מייל שיווקי" />
                 <RadioOption field="referralSource" value="event" label="🏢 אירוע/כנס" />
                 <RadioOption field="referralSource" value="whatsapp" label="📱 וואטסאפ" />
@@ -365,27 +303,14 @@ const SurveyForm = () => {
               </div>
             </div>
             
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">מספר עובדים</label>
-                <div className="grid grid-cols-2 gap-2">
-                  <RadioOption field="employeeCount" value="1" label="רק אני" />
-                  <RadioOption field="employeeCount" value="2-5" label="2-5" />
-                  <RadioOption field="employeeCount" value="6-20" label="6-20" />
-                  <RadioOption field="employeeCount" value="21-50" label="21-50" />
-                  <RadioOption field="employeeCount" value="50+" label="50+" />
-                </div>
-              </div>
-              
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">מספר שותפים</label>
-                <input
-                  type="text"
-                  value={formData.partnerCount}
-                  onChange={(e) => handleInputChange('partnerCount', e.target.value)}
-                  className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                  placeholder="מספר השותפים בעסק"
-                />
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">מספר עובדים</label>
+              <div className="grid grid-cols-2 md:grid-cols-5 gap-2">
+                <RadioOption field="employeeCount" value="1" label="רק אני" />
+                <RadioOption field="employeeCount" value="2-5" label="2-5" />
+                <RadioOption field="employeeCount" value="6-20" label="6-20" />
+                <RadioOption field="employeeCount" value="21-50" label="21-50" />
+                <RadioOption field="employeeCount" value="50+" label="50+" />
               </div>
             </div>
           </div>
@@ -444,16 +369,6 @@ const SurveyForm = () => {
                 placeholder="מה המניע והחזון שלכם..."
               />
             </div>
-            
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">תיאור קצר של העסק</label>
-              <textarea
-                value={formData.description}
-                onChange={(e) => handleInputChange('description', e.target.value)}
-                className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent h-24 resize-none"
-                placeholder="תארו בקצרה מה העסק עושה..."
-              />
-            </div>
           </div>
         );
 
@@ -462,47 +377,6 @@ const SurveyForm = () => {
           <div className="space-y-6">
             <div className="text-center mb-8">
               <Users className="w-12 h-12 text-blue-500 mx-auto mb-4" />
-              <h2 className="text-2xl font-bold text-gray-800 mb-2">רקע כללי עליכם</h2>
-              <p className="text-gray-600">בואו נכיר את האנשים מאחורי העסק</p>
-            </div>
-            
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">מי האנשים שמובילים את העסק?</label>
-              <textarea
-                value={formData.leadership}
-                onChange={(e) => handleInputChange('leadership', e.target.value)}
-                className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent h-24 resize-none"
-                placeholder="ספרו על הצוות המוביל..."
-              />
-            </div>
-            
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">מה חשוב שנדע עליכם?</label>
-              <textarea
-                value={formData.importantInfo}
-                onChange={(e) => handleInputChange('importantInfo', e.target.value)}
-                className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent h-24 resize-none"
-                placeholder="מידע חשוב על הצוות או העסק..."
-              />
-            </div>
-            
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">מה הייחודיות של העסק שלכם שאין למתחרים?</label>
-              <textarea
-                value={formData.uniqueness}
-                onChange={(e) => handleInputChange('uniqueness', e.target.value)}
-                className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent h-24 resize-none"
-                placeholder="מה מייחד אתכם מהמתחרים..."
-              />
-            </div>
-          </div>
-        );
-
-      case 4:
-        return (
-          <div className="space-y-6">
-            <div className="text-center mb-8">
-              <Target className="w-12 h-12 text-blue-500 mx-auto mb-4" />
               <h2 className="text-2xl font-bold text-gray-800 mb-2">המטרות העסקיות שלכם</h2>
               <p className="text-gray-600">בואו נבין מה האתגרים והמטרות שלכם</p>
             </div>
@@ -555,7 +429,7 @@ const SurveyForm = () => {
           </div>
         );
 
-      case 5:
+      case 4:
         return (
           <div className="space-y-6">
             <div className="text-center mb-8">
@@ -571,34 +445,6 @@ const SurveyForm = () => {
                 <RadioOption field="customerService" value="employees" label="👥 יש צוות שטיפול בפניות" />
                 <RadioOption field="customerService" value="mixed" label="🔄 חלק אני וחלק העובדים" />
                 <RadioOption field="customerService" value="outsourced" label="🏢 מיקור חוץ" />
-              </div>
-            </div>
-            
-            <div className="space-y-4">
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-3">יש לכם עובדים בעסק?</label>
-                <div className="space-y-2">
-                  <label className="flex items-center">
-                    <input
-                      type="radio"
-                      name="hasEmployees"
-                      checked={formData.hasEmployees === true}
-                      onChange={() => handleInputChange('hasEmployees', true)}
-                      className="mr-2"
-                    />
-                    כן, יש לנו עובדים
-                  </label>
-                  <label className="flex items-center">
-                    <input
-                      type="radio"
-                      name="hasEmployees"
-                      checked={formData.hasEmployees === false}
-                      onChange={() => handleInputChange('hasEmployees', false)}
-                      className="mr-2"
-                    />
-                    לא, אין לנו עובדים
-                  </label>
-                </div>
               </div>
             </div>
             
@@ -639,32 +485,10 @@ const SurveyForm = () => {
                 <CheckboxOption field="commonQuestions" value="refunds" label="↩️ מדיניות החזרות" />
               </div>
             </div>
-            
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-3">איזה תהליכים גוזלים ממכם הכי הרבה זמן?</label>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
-                <CheckboxOption field="timeConsumingProcesses" value="customer-calls" label="📞 שיחות עם לקוחות" />
-                <CheckboxOption field="timeConsumingProcesses" value="scheduling" label="🗓️ תיאום פגישות" />
-                <CheckboxOption field="timeConsumingProcesses" value="quotes" label="💰 הכנת הצעות מחיר" />
-                <CheckboxOption field="timeConsumingProcesses" value="follow-ups" label="📧 מעקבים" />
-                <CheckboxOption field="timeConsumingProcesses" value="admin" label="📋 עבודה אדמיניסטרטיבית" />
-                <CheckboxOption field="timeConsumingProcesses" value="documentation" label="📄 תיעוד" />
-              </div>
-            </div>
-            
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">מהו האתגר העיקרי בעסק שלכם שצ'אטבוט יכול לעזור לכם לפתור?</label>
-              <textarea
-                value={formData.mainChallenge}
-                onChange={(e) => handleInputChange('mainChallenge', e.target.value)}
-                className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent h-24 resize-none"
-                placeholder="תארו את האתגר המרכזי..."
-              />
-            </div>
           </div>
         );
 
-      case 6:
+      case 5:
         return (
           <div className="space-y-6">
             <div className="text-center mb-8">
@@ -768,22 +592,10 @@ const SurveyForm = () => {
                 placeholder="איך אתם מתמודדים עם לידים שלא הפכו ללקוחות?"
               />
             </div>
-            
-            {formData.hasUpselling && (
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">פרטו על תוכניות השדרוג שלכם</label>
-                <textarea
-                  value={formData.upsellingDetails}
-                  onChange={(e) => handleInputChange('upsellingDetails', e.target.value)}
-                  className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent h-20 resize-none"
-                  placeholder="איך אתם מגדילים שווי לקוחות קיימים?"
-                />
-              </div>
-            )}
           </div>
         );
 
-      case 7:
+      case 6:
         return (
           <div className="space-y-6">
             <div className="text-center mb-8">
@@ -869,13 +681,13 @@ const SurveyForm = () => {
           </div>
         );
 
-      case 8:
+      case 7:
         return (
           <div className="space-y-6">
             <div className="text-center mb-8">
               <Sparkles className="w-12 h-12 text-blue-500 mx-auto mb-4" />
-              <h2 className="text-2xl font-bold text-gray-800 mb-2">ניסיון קודם וסיכום</h2>
-              <p className="text-gray-600">השלב האחרון - ספרו לנו על הניסיון שלכם</p>
+              <h2 className="text-2xl font-bold text-gray-800 mb-2">ניסיון קודם</h2>
+              <p className="text-gray-600">ספרו לנו על הניסיון שלכם עם אוטומציה</p>
             </div>
             
             <div className="space-y-4">
@@ -916,8 +728,27 @@ const SurveyForm = () => {
               />
             </div>
             
+            <div className="bg-blue-50 p-6 rounded-lg">
+              <h3 className="text-lg font-semibold text-blue-800 mb-3">🎉 כמעט סיימנו!</h3>
+              <p className="text-blue-700">
+                אתם עומדים לסיים את השאלון. בצעד הבא תוכלו לסקור את כל המידע ולשלוח אותו אלינו.
+                נחזור אליכם תוך 24 שעות עם הצעה מותאמת אישית לעסק שלכם! 🚀
+              </p>
+            </div>
+          </div>
+        );
+
+      case 8:
+        return (
+          <div className="space-y-6">
+            <div className="text-center mb-8">
+              <CheckCircle2 className="w-12 h-12 text-green-500 mx-auto mb-4" />
+              <h2 className="text-2xl font-bold text-gray-800 mb-2">סיכום ושליחה</h2>
+              <p className="text-gray-600">בדקו את הפרטים ושלחו את השאלון</p>
+            </div>
+            
             <div className="bg-gray-50 p-6 rounded-lg">
-              <h3 className="font-semibold text-gray-800 mb-4">סיכום פרטי התקשרות:</h3>
+              <h3 className="font-semibold text-gray-800 mb-4">פרטי התקשרות:</h3>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
                 <div><strong>עסק:</strong> {formData.businessName}</div>
                 <div><strong>איש קשר:</strong> {formData.contactName}</div>
@@ -938,18 +769,25 @@ const SurveyForm = () => {
                 </li>
                 <li className="flex items-center">
                   <CheckCircle2 className="w-4 h-4 mr-2" />
-                  נכין הצעה מותאמת אישית לעסק שלכם
+                  נכין הצעה מותאמת אישית, המדגישה פתרונות שיחסכו זמן ויגדילו תוצאות
                 </li>
                 <li className="flex items-center">
                   <CheckCircle2 className="w-4 h-4 mr-2" />
-                  נחזור אליכם תוך 24 שעות לתיאום שיחה
+                  נתקדם ליישום והטמעת הפתרונות, כדי לקדם את העסק ולהפוך את האוטומציות לתוצאות אמיתיות
                 </li>
                 <li className="flex items-center">
                   <CheckCircle2 className="w-4 h-4 mr-2" />
-                  נציג לכם דמו של הבוט המותאם לעסק שלכם
+                  נסגור 
                 </li>
               </ul>
             </div>
+            
+            <button
+              onClick={handleSubmit}
+              className="w-full bg-gradient-to-r from-blue-500 to-indigo-600 text-white px-8 py-4 rounded-lg font-medium hover:from-blue-600 hover:to-indigo-700 transition-all transform hover:scale-105 shadow-lg"
+            >
+              🚀 שלחו את השאלון
+            </button>
           </div>
         );
 
@@ -965,10 +803,10 @@ const SurveyForm = () => {
         <div className="max-w-4xl mx-auto px-4 py-6">
           <div className="text-center">
             <h1 className="text-3xl font-bold text-gray-800 mb-2">
-              בואו נבנה לכם בוט חכם! 🤖
+              טכנולוגי לי! 🤖
             </h1>
             <p className="text-gray-600 max-w-2xl mx-auto">
-              שאלון קצרצר שיעזור לנו להכין לכם פתרון אוטומציה מושלם שיחסוך זמן ויגדיל מכירות
+              שאלון קצר שיעזור לנו להכין פתרונות טכנולוגיים מדויקים לעסק שלך – לחסוך זמן ולהגדיל מכירות
             </p>
           </div>
         </div>
@@ -993,65 +831,32 @@ const SurveyForm = () => {
       {/* Main Form */}
       <div className="max-w-4xl mx-auto px-4 pb-8">
         <div className="bg-white rounded-2xl shadow-xl p-8">
-          <form onSubmit={handleSubmit} name="bot-survey" method="POST" data-netlify="true">
-            <input type="hidden" name="form-name" value="bot-survey" />
+          {renderStep()}
+          
+          {/* Navigation */}
+          <div className="flex justify-between mt-8 pt-6 border-t">
+            {currentStep > 1 ? (
+              <button
+                onClick={prevStep}
+                className="flex items-center px-6 py-3 text-gray-600 hover:text-gray-800 transition-colors"
+              >
+                <ArrowLeft className="w-4 h-4 mr-2" />
+                הקודם
+              </button>
+            ) : (
+              <div />
+            )}
             
-            {/* Hidden fields for Netlify */}
-            {Object.entries(formData).map(([key, value]) => (
-              <input
-                key={key}
-                type="hidden"
-                name={key}
-                value={Array.isArray(value) ? value.join(', ') : String(value)}
-              />
-            ))}
-            
-            {renderStep()}
-            
-            {/* Navigation */}
-            <div className="flex justify-between mt-8 pt-6 border-t">
-              {currentStep > 1 ? (
-                <button
-                  type="button"
-                  onClick={prevStep}
-                  className="flex items-center px-6 py-3 text-gray-600 hover:text-gray-800 transition-colors"
-                >
-                  <ArrowLeft className="w-4 h-4 mr-2" />
-                  הקודם
-                </button>
-              ) : (
-                <div />
-              )}
-              
-              {currentStep < totalSteps ? (
-                <button
-                  type="button"
-                  onClick={nextStep}
-                  className="flex items-center bg-gradient-to-r from-blue-500 to-indigo-600 text-white px-8 py-3 rounded-lg font-medium hover:from-blue-600 hover:to-indigo-700 transition-all transform hover:scale-105 shadow-md"
-                >
-                  הבא
-                  <ArrowRight className="w-4 h-4 mr-2" />
-                </button>
-              ) : (
-                <button
-                  type="submit"
-                  disabled={isSubmitting}
-                  className="flex items-center bg-gradient-to-r from-green-500 to-green-600 text-white px-8 py-4 rounded-lg font-medium hover:from-green-600 hover:to-green-700 transition-all transform hover:scale-105 shadow-lg disabled:opacity-50 disabled:cursor-not-allowed"
-                >
-                  {isSubmitting ? (
-                    <>
-                      <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
-                      שולח...
-                    </>
-                  ) : (
-                    <>
-                      🚀 שלחו את השאלון
-                    </>
-                  )}
-                </button>
-              )}
-            </div>
-          </form>
+            {currentStep < totalSteps && (
+              <button
+                onClick={nextStep}
+                className="flex items-center bg-gradient-to-r from-blue-500 to-indigo-600 text-white px-8 py-3 rounded-lg font-medium hover:from-blue-600 hover:to-indigo-700 transition-all transform hover:scale-105 shadow-md"
+              >
+                הבא
+                <ArrowRight className="w-4 h-4 mr-2" />
+              </button>
+            )}
+          </div>
         </div>
       </div>
     </div>
