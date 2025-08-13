@@ -262,7 +262,6 @@ const SurveyForm = () => {
                 <div className="space-y-2">
                   <RadioOption field="preferredContact" value="email" label="📧 מייל" />
                   <RadioOption field="preferredContact" value="phone" label="📞 טלפון" />
-                  <RadioOption field="preferredContact" value="whatsapp" label="📱 וואטסאפ" />
                 </div>
               </div>
               
