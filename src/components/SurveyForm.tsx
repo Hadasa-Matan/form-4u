@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { ChevronDown, ArrowRight, ArrowLeft, CheckCircle2, Building, Users, Target, MessageSquare, Bot, Sparkles } from 'lucide-react';
 
 interface FormData {
@@ -119,6 +119,15 @@ const SurveyForm = () => {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [submitError, setSubmitError] = useState<string | null>(null);
   const totalSteps = 8;
+  const topRef = useRef<HTMLDivElement | null>(null);
+
+  useEffect(() => {
+    if (topRef.current) {
+      topRef.current.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    } else {
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+  }, [currentStep]);
 
   const handleInputChange = (field: keyof FormData, value: any) => {
     setFormData(prev => ({ ...prev, [field]: value }));
@@ -849,7 +858,7 @@ const SurveyForm = () => {
   };
 
   return (
-    <div dir="rtl" className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 text-right">
+    <div dir="rtl" className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 text-right" ref={topRef}>
       {/* Header */}
       <div className="bg-white shadow-sm">
         <div className="max-w-4xl mx-auto px-4 py-6">
