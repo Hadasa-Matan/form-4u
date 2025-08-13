@@ -130,6 +130,25 @@ const SurveyForm = () => {
     }
   }, [currentStep]);
 
+  const escapeHtml = (unsafe: string) => unsafe
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#039;');
+
+  const humanizeKey = (key: string) => key
+    .replace(/([a-z])([A-Z])/g, '$1 $2')
+    .replace(/_/g, ' ')
+    .replace(/\b\w/g, (c) => c.toUpperCase());
+
+  const buildHtmlTable = (data: Record<string, string>) => {
+    const rows = Object.entries(data)
+      .map(([k, v]) => `<tr><th style="text-align:right;padding:6px;border:1px solid #e5e7eb;background:#f8fafc;">${escapeHtml(humanizeKey(k))}</th><td style="padding:6px;border:1px solid #e5e7eb;">${escapeHtml(v)}</td></tr>`) 
+      .join('');
+    return `<table dir=\"rtl\" style=\"border-collapse:collapse;width:100%;font-family:Arial,sans-serif;font-size:14px;\">${rows}</table>`;
+  };
+
   const handleInputChange = (field: keyof FormData, value: any) => {
     setFormData(prev => ({ ...prev, [field]: value }));
   };
@@ -176,6 +195,7 @@ const SurveyForm = () => {
         reply_to: formData.email || toEmail,
         to_email: toEmail,
         submitted_at: new Date().toISOString(),
+        table_html: buildHtmlTable(normalized),
         ...normalized,
       };
 
