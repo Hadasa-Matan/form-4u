@@ -41,7 +41,6 @@ jobs:
       - name: Build
         run: npm run build
         env:
-          VITE_WEB3FORMS_KEY: ${{ secrets.VITE_WEB3FORMS_KEY }}
           VITE_FORM_RECEIVER_EMAIL: ${{ secrets.VITE_FORM_RECEIVER_EMAIL }}
       - name: Setup Pages
         uses: actions/configure-pages@v5

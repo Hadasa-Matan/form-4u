@@ -148,16 +148,32 @@ const SurveyForm = () => {
     setSubmitError(null);
     setIsSubmitting(true);
     try {
+      const toEmail = import.meta.env.VITE_FORM_RECEIVER_EMAIL;
+      if (!toEmail) throw new Error('לא הוגדר מייל יעד');
+
+      const endpoint = `https://formsubmit.co/ajax/${encodeURIComponent(toEmail)}`;
+
+      const normalized: Record<string, string> = {};
+      Object.entries(formData).forEach(([key, value]) => {
+        if (Array.isArray(value)) {
+          normalized[key] = value.join(', ');
+        } else if (typeof value === 'boolean') {
+          normalized[key] = value ? 'כן' : 'לא';
+        } else {
+          normalized[key] = String(value ?? '');
+        }
+      });
+
       const payload = {
-        access_key: import.meta.env.VITE_WEB3FORMS_KEY,
-        subject: 'שאלון חדש מאתר form-4u',
-        from_name: formData.contactName || formData.businessName || 'טופס האתר',
-        to: import.meta.env.VITE_FORM_RECEIVER_EMAIL,
-        replyto: formData.email || import.meta.env.VITE_FORM_RECEIVER_EMAIL,
-        data: formData,
+        _subject: 'שאלון חדש מאתר form-4u',
+        _replyto: formData.email || toEmail,
+        _template: 'table',
+        _captcha: 'false',
+        submitted_at: new Date().toISOString(),
+        ...normalized,
       };
 
-      const response = await fetch('https://api.web3forms.com/submit', {
+      const response = await fetch(endpoint, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -167,7 +183,7 @@ const SurveyForm = () => {
       });
 
       const result = await response.json();
-      if (!response.ok || result.success !== true) {
+      if (!response.ok || !(result.success === true || result.success === 'true')) {
         throw new Error(result.message || 'שליחה נכשלה');
       }
 
