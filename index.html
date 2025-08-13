@@ -4,8 +4,10 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>שאלון התאמת פתרונות טכנולוגיים</title>
-    <!-- favicon אם יש -->
-    <link rel="icon" type="image/svg+xml" href="/form-4u/favicon.ico" />
+    
+    <!-- favicon -->
+    <link rel="icon" href="/favicon.ico" />
+
   </head>
   <body>
     <div id="root"></div>
@@ -21,7 +23,11 @@
               return s.replace(/~and~/g, '&');
             })
             .join('?');
-          window.history.replaceState(null, null, l.pathname.slice(0, -1) + decoded + l.hash);
+          window.history.replaceState(
+            null,
+            null,
+            l.pathname.slice(0, -1) + decoded + l.hash
+          );
         }
       })(window.location);
     </script>
