@@ -160,7 +160,7 @@ const SurveyForm = () => {
       const toEmail = import.meta.env.VITE_FORM_RECEIVER_EMAIL;
       if (!toEmail) throw new Error('לא הוגדר מייל יעד');
 
-      const endpoint = `https://formsubmit.co/ajax/${encodeURIComponent(toEmail)}`;
+      const endpoint = `https://formsubmit.co/ajax/${toEmail.trim()}`;
 
       const normalized: Record<string, string> = {};
       Object.entries(formData).forEach(([key, value]) => {
