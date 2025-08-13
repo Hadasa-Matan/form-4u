@@ -1,5 +1,6 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { ChevronDown, ArrowRight, ArrowLeft, CheckCircle2, Building, Users, Target, MessageSquare, Bot, Sparkles } from 'lucide-react';
+import emailjs from '@emailjs/browser';
 
 interface FormData {
   // פרטים כלליים
@@ -158,9 +159,6 @@ const SurveyForm = () => {
     setIsSubmitting(true);
     try {
       const toEmail = import.meta.env.VITE_FORM_RECEIVER_EMAIL;
-      if (!toEmail) throw new Error('לא הוגדר מייל יעד');
-
-      const endpoint = `https://formsubmit.co/ajax/${toEmail.trim()}`;
 
       const normalized: Record<string, string> = {};
       Object.entries(formData).forEach(([key, value]) => {
@@ -174,29 +172,45 @@ const SurveyForm = () => {
       });
 
       const payload = {
-        _subject: 'שאלון חדש מאתר form-4u',
-        _replyto: formData.email || toEmail,
-        _template: 'table',
-        _captcha: 'false',
+        subject: 'שאלון חדש מאתר form-4u',
+        reply_to: formData.email || toEmail,
+        to_email: toEmail,
         submitted_at: new Date().toISOString(),
         ...normalized,
       };
 
-      const response = await fetch(endpoint, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Accept': 'application/json'
-        },
-        body: JSON.stringify(payload)
-      });
+      const serviceId = import.meta.env.VITE_EMAILJS_SERVICE_ID;
+      const templateId = import.meta.env.VITE_EMAILJS_TEMPLATE_ID;
+      const publicKey = import.meta.env.VITE_EMAILJS_PUBLIC_KEY;
 
-      const result = await response.json();
-      if (!response.ok || !(result.success === true || result.success === 'true')) {
-        throw new Error(result.message || 'שליחה נכשלה');
+      if (serviceId && templateId && publicKey) {
+        const result = await emailjs.send(serviceId, templateId, payload, { publicKey });
+        if (result.status !== 200) throw new Error('שליחה נכשלה');
+        setIsSubmitted(true);
+      } else if (toEmail) {
+        const endpoint = `https://formsubmit.co/ajax/${toEmail.trim()}`;
+        const response = await fetch(endpoint, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Accept': 'application/json'
+          },
+          body: JSON.stringify({
+            _subject: payload.subject,
+            _replyto: payload.reply_to,
+            _template: 'table',
+            _captcha: 'false',
+            ...normalized,
+          })
+        });
+        const result = await response.json();
+        if (!response.ok || !(result.success === true || result.success === 'true')) {
+          throw new Error(result.message || 'שליחה נכשלה');
+        }
+        setIsSubmitted(true);
+      } else {
+        throw new Error('לא הוגדר מייל יעד');
       }
-
-      setIsSubmitted(true);
     } catch (err: any) {
       setSubmitError(err?.message || 'אירעה שגיאה בשליחה');
     } finally {
