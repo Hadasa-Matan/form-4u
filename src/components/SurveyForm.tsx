@@ -376,15 +376,15 @@ const SurveyForm = () => {
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-2">מהו תחום העסק?</label>
               <div className="grid grid-cols-2 md:grid-cols-3 gap-2">
-                <RadioOption field="businessField" value="tech" label="🖥️ טכנולוגיה" />
-                <RadioOption field="businessField" value="retail" label="🛍️ קמעונאות" />
-                <RadioOption field="businessField" value="services" label="🔧 שירותים" />
-                <RadioOption field="businessField" value="food" label="🍕 מזון ומשקאות" />
-                <RadioOption field="businessField" value="health" label="🏥 בריאות" />
-                <RadioOption field="businessField" value="education" label="🎓 חינוך" />
-                <RadioOption field="businessField" value="finance" label="💰 פיננסים" />
-                <RadioOption field="businessField" value="real-estate" label="🏠 נדל״ן" />
-                <RadioOption field="businessField" value="other" label="🔄 אחר" />
+                <RadioOption field="businessField" value="טכנולוגיה" label="🖥️ טכנולוגיה" />
+                <RadioOption field="businessField" value="קמעונאות" label="🛍️ קמעונאות" />
+                <RadioOption field="businessField" value="שירותים" label="🔧 שירותים" />
+                <RadioOption field="businessField" value="מזון ומשקאות" label="🍕 מזון ומשקאות" />
+                <RadioOption field="businessField" value="בריאות" label="🏥 בריאות" />
+                <RadioOption field="businessField" value="חינוך" label="🎓 חינוך" />
+                <RadioOption field="businessField" value="פיננסים" label="💰 פיננסים" />
+                <RadioOption field="businessField" value="נדל״ן" label="🏠 נדל״ן" />
+                <RadioOption field="businessField" value="אחר" label="🔄 אחר" />
               </div>
             </div>
             
