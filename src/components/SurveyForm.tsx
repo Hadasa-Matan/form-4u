@@ -116,6 +116,8 @@ const SurveyForm = () => {
   const [formData, setFormData] = useState<FormData>(initialFormData);
   const [currentStep, setCurrentStep] = useState(1);
   const [isSubmitted, setIsSubmitted] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [submitError, setSubmitError] = useState<string | null>(null);
   const totalSteps = 8;
 
   const handleInputChange = (field: keyof FormData, value: any) => {
@@ -142,9 +144,39 @@ const SurveyForm = () => {
     }
   };
 
-  const handleSubmit = () => {
-    console.log('Form submitted:', formData);
-    setIsSubmitted(true);
+  const handleSubmit = async () => {
+    setSubmitError(null);
+    setIsSubmitting(true);
+    try {
+      const payload = {
+        access_key: import.meta.env.VITE_WEB3FORMS_KEY,
+        subject: 'שאלון חדש מאתר form-4u',
+        from_name: formData.contactName || formData.businessName || 'טופס האתר',
+        to: import.meta.env.VITE_FORM_RECEIVER_EMAIL,
+        replyto: formData.email || import.meta.env.VITE_FORM_RECEIVER_EMAIL,
+        data: formData,
+      };
+
+      const response = await fetch('https://api.web3forms.com/submit', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Accept': 'application/json'
+        },
+        body: JSON.stringify(payload)
+      });
+
+      const result = await response.json();
+      if (!response.ok || result.success !== true) {
+        throw new Error(result.message || 'שליחה נכשלה');
+      }
+
+      setIsSubmitted(true);
+    } catch (err: any) {
+      setSubmitError(err?.message || 'אירעה שגיאה בשליחה');
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   const CheckboxOption = ({ field, value, label }: { field: keyof FormData, value: string, label: string }) => {
@@ -197,17 +229,18 @@ const SurveyForm = () => {
           </div>
           <h2 className="text-2xl font-bold text-gray-800 mb-2">תודה רבה! 🎉</h2>
           <p className="text-gray-600 mb-6">השאלון נשלח בהצלחה. נחזור אליכם בקרוב עם פתרון מותאם אישית לעסק שלכם.</p>
-          <button 
-            onClick={() => {
-              setIsSubmitted(false);
-              setCurrentStep(1);
-              setFormData(initialFormData);
-            }}
-            className="text-blue-500 hover:text-blue-600 font-medium"
-          >
-            מלאו שאלון נוסף
-          </button>
-        </div>
+                      <button 
+              onClick={() => {
+                setIsSubmitted(false);
+                setCurrentStep(1);
+                setFormData(initialFormData);
+              }}
+              className="text-blue-500 hover:text-blue-600 font-medium"
+            >
+              מלאו שאלון נוסף
+            </button>
+            <p className="text-xs text-gray-500 mt-4">נשלח בהצלחה למייל</p>
+</div>
       </div>
     );
   }
@@ -783,10 +816,14 @@ const SurveyForm = () => {
             
             <button
               onClick={handleSubmit}
-              className="w-full bg-gradient-to-r from-blue-500 to-indigo-600 text-white px-8 py-4 rounded-lg font-medium hover:from-blue-600 hover:to-indigo-700 transition-all transform hover:scale-105 shadow-lg"
+              disabled={isSubmitting}
+              className={`w-full bg-gradient-to-r from-blue-500 to-indigo-600 text-white px-8 py-4 rounded-lg font-medium transition-all transform shadow-lg ${isSubmitting ? 'opacity-60 cursor-not-allowed' : 'hover:from-blue-600 hover:to-indigo-700 hover:scale-105'}`}
             >
-              🚀 שלחו את השאלון
+              {isSubmitting ? 'שולח...' : '🚀 שלחו את השאלון'}
             </button>
+            {submitError && (
+              <p className="text-red-600 text-sm mt-2">{submitError}</p>
+            )}
           </div>
         );
 
