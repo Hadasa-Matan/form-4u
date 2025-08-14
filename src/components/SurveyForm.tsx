@@ -555,24 +555,24 @@ const SurveyForm = () => {
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-3">מהם גוזלי הזמן המרכזיים שלכם?</label>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
-                <CheckboxOption field="timeWasters" value="phone-calls" label="📞 שיחות טלפון חוזרות" />
-                <CheckboxOption field="timeWasters" value="emails" label="📧 מענה למיילים" />
-                <CheckboxOption field="timeWasters" value="scheduling" label="🗓️ תיאום פגישות" />
-                <CheckboxOption field="timeWasters" value="basic-questions" label="❓ שאלות בסיסיות" />
-                <CheckboxOption field="timeWasters" value="data-entry" label="⌨️ הזנת נתונים" />
-                <CheckboxOption field="timeWasters" value="follow-ups" label="👥 מעקבים ותזכורות" />
+                <CheckboxOption field="timeWasters" value="שיחות טלפון חוזרות" label="📞 שיחות טלפון חוזרות" />
+                <CheckboxOption field="timeWasters" value="מענה למיילים" label="📧 מענה למיילים" />
+                <CheckboxOption field="timeWasters" value="תיאום פגישות" label="🗓️ תיאום פגישות" />
+                <CheckboxOption field="timeWasters" value="שאלות בסיסיות" label="❓ שאלות בסיסיות" />
+                <CheckboxOption field="timeWasters" value="הזנת נתונים" label="⌨️ הזנת נתונים" />
+                <CheckboxOption field="timeWasters" value="מעקבים ותזכורות" label="👥 מעקבים ותזכורות" />
               </div>
             </div>
             
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-3">מה המטרה המרכזית שלכם בתהליך איסוף לידים?</label>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
-                <CheckboxOption field="leadGoals" value="no-missed-leads" label="🎯 לא לפספס לידים" />
-                <CheckboxOption field="leadGoals" value="increase-sales" label="💰 להגדיל מכירות" />
-                <CheckboxOption field="leadGoals" value="better-cx" label="✨ לשפר חוויית לקוח" />
-                <CheckboxOption field="leadGoals" value="free-time" label="👨‍👩‍👧‍👦 יותר זמן למשפחה" />
-                <CheckboxOption field="leadGoals" value="automation" label="🤖 אוטומציה מלאה" />
-                <CheckboxOption field="leadGoals" value="qualify-leads" label="🔍 סינון לידים איכותיים" />
+                <CheckboxOption field="leadGoals" value="לא לפספס לידים" label="🎯 לא לפספס לידים" />
+                <CheckboxOption field="leadGoals" value="להגדיל מכירות" label="💰 להגדיל מכירות" />
+                <CheckboxOption field="leadGoals" value="לשפר חוויית לקוח" label="✨ לשפר חוויית לקוח" />
+                <CheckboxOption field="leadGoals" value="יותר זמן למשפחה" label="👨‍👩‍👧‍👦 יותר זמן למשפחה" />
+                <CheckboxOption field="leadGoals" value="אוטומציה מלאה" label="🤖 אוטומציה מלאה" />
+                <CheckboxOption field="leadGoals" value="סינון לידים איכותיים" label="🔍 סינון לידים איכותיים" />
               </div>
             </div>
             
@@ -681,10 +681,10 @@ const SurveyForm = () => {
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-3">כמה זמן לוקח מרגע קבלת הפנייה עד טיפול?</label>
               <div className="grid grid-cols-2 md:grid-cols-4 gap-2">
-                <RadioOption field="responseTime" value="immediate" label="⚡ מיידי" />
-                <RadioOption field="responseTime" value="1-24h" label="🕐 תוך 24 שעות" />
-                <RadioOption field="responseTime" value="1-3d" label="📅 1-3 ימים" />
-                <RadioOption field="responseTime" value="more" label="⏰ יותר מ-3 ימים" />
+                <RadioOption field="responseTime" value="מיידי" label="⚡ מיידי" />
+                <RadioOption field="responseTime" value="תוך 24 שעות" label="🕐 תוך 24 שעות" />
+                <RadioOption field="responseTime" value="1-3 ימים" label="📅 1-3 ימים" />
+                <RadioOption field="responseTime" value="יותר מ-3 ימים" label="⏰ יותר מ-3 ימים" />
               </div>
             </div>
             
@@ -766,14 +766,14 @@ const SurveyForm = () => {
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-3">מהן המטרות העיקריות שלכם מהכנסת אוטומציות לעסק?</label>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
-                <CheckboxOption field="botGoals" value="24-7-support" label="🕐 מענה 24/7" />
-                <CheckboxOption field="botGoals" value="lead-qualification" label="🎯 סינון וכישור לידים" />
-                <CheckboxOption field="botGoals" value="appointment-scheduling" label="📅 תיאום פגישות אוטומטי" />
-                <CheckboxOption field="botGoals" value="faq-answers" label="❓ מענה לשאלות נפוצות" />
-                <CheckboxOption field="botGoals" value="lead-collection" label="📝 איסוף פרטי לידים" />
+                <CheckboxOption field="botGoals" value="מענה 24/7" label="🕐 מענה 24/7" />
+                <CheckboxOption field="botGoals" value="סינון וכישור לידים" label="🎯 סינון וכישור לידים" />
+                <CheckboxOption field="botGoals" value="תיאום פגישות אוטומטי" label="📅 תיאום פגישות אוטומטי" />
+                <CheckboxOption field="botGoals" value="מענה לשאלות נפוצות" label="❓ מענה לשאלות נפוצות" />
+                <CheckboxOption field="botGoals" value="איסוף פרטי לידים" label="📝 איסוף פרטי לידים" />
                 <CheckboxOption field="botGoals" value="customer-service" label="🎧 שירות לקוחות בסיסי" />
-                <CheckboxOption field="botGoals" value="sales-funnel" label="🔄 הכוונה במשפך מכירות" />
-                <CheckboxOption field="botGoals" value="reduce-workload" label="⚡ הקלה על העומס" />
+                <CheckboxOption field="botGoals" value="הכוונה במשפך מכירות" label="🔄 הכוונה במשפך מכירות" />
+                <CheckboxOption field="botGoals" value="הקלה על העומס" label="⚡ הקלה על העומס" />
               </div>
             </div>
             
