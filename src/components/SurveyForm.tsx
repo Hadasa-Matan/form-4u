@@ -451,14 +451,14 @@ const SurveyForm = () => {
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-2">מאיפה שמעתם עלינו?</label>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
-                <RadioOption field="referralSource" value="google" label="🔍 גוגל" />
-                <RadioOption field="referralSource" value="referral" label="👤 הפניה מחבר/לקוח" />
-                <RadioOption field="referralSource" value="website" label="🌐 האתר שלנו" />
-                <RadioOption field="referralSource" value="email" label="📧 מייל שיווקי" />
-                <RadioOption field="referralSource" value="event" label="🏢 אירוע/כנס" />
+                <RadioOption field="referralSource" value="גוגל" label="🔍 גוגל" />
+                <RadioOption field="referralSource" value="הפניה מחבר/לקוח" label="👤 הפניה מחבר/לקוח" />
+                <RadioOption field="referralSource" value="האתר שלנו" label="🌐 האתר שלנו" />
+                <RadioOption field="referralSource" value="מייל שיווקי" label="📧 מייל שיווקי" />
+                <RadioOption field="referralSource" value="אירוע/כנס" label="🏢 אירוע/כנס" />
                 <RadioOption field="referralSource" value="whatsapp" label="📱 וואטסאפ" />
-                <RadioOption field="referralSource" value="ads" label="📢 פרסומת" />
-                <RadioOption field="referralSource" value="other" label="🔄 אחר" />
+                <RadioOption field="referralSource" value="פרסומת" label="📢 פרסומת" />
+                <RadioOption field="referralSource" value="אחר" label="🔄 אחר" />
               </div>
             </div>
             
@@ -764,7 +764,7 @@ const SurveyForm = () => {
             </div>
             
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-3">מהן המטרות העיקריות שלכם מהבוט?</label>
+              <label className="block text-sm font-medium text-gray-700 mb-3">מהן המטרות העיקריות שלכם מהכנסת אוטומציות לעסק?</label>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
                 <CheckboxOption field="botGoals" value="24-7-support" label="🕐 מענה 24/7" />
                 <CheckboxOption field="botGoals" value="lead-qualification" label="🎯 סינון וכישור לידים" />
@@ -891,7 +891,7 @@ const SurveyForm = () => {
               <h3 className="text-lg font-semibold text-blue-800 mb-3">🎉 כמעט סיימנו!</h3>
               <p className="text-blue-700">
                 אתם עומדים לסיים את השאלון. בצעד הבא תוכלו לסקור את כל המידע ולשלוח אותו אלינו.
-                נחזור אליכם תוך 24 שעות עם הצעה מותאמת אישית לעסק שלכם! 🚀
+                אם עדיין לא קבעתם איתנו פגישה, מוזמנים לקבוע איתנו פגישה ובה נבנה יחד הצעה מותאמת אישית לעסק שלכם! 🚀
               </p>
             </div>
           </div>
@@ -934,10 +934,6 @@ const SurveyForm = () => {
                   <CheckCircle2 className="w-4 h-4 mr-2" />
                   נתקדם ליישום והטמעת הפתרונות, כדי לקדם את העסק ולהפוך את האוטומציות לתוצאות אמיתיות
                 </li>
-                <li className="flex items-center">
-                  <CheckCircle2 className="w-4 h-4 mr-2" />
-                  נסגור 
-                </li>
               </ul>
             </div>
             
@@ -969,7 +965,15 @@ const SurveyForm = () => {
               טכנולוגי לי! 🤖
             </h1>
             <p className="text-gray-600 max-w-2xl mx-auto">
-              שאלון קצר שיעזור לנו להכין פתרונות טכנולוגיים מדויקים לעסק שלך – לחסוך זמן ולהגדיל מכירות
+              היי 😄
+אנחנו יודעים שאתם עמוסים – אולי בין לקוח לשיחה 📞, אולי רגע לפני הפסקת קפה ☕,
+ אבל אם הגעתם לפה – כנראה שאתם רוצים להפוך את העסק שלכם לחכם, יעיל וחסכוני יותר 🧠
+לפני שנקפוץ לשיחה ונבנה לכם אוטומציה שתשאיר אבק למשימות הידניות,
+ הכנו לכם שאלון קצרצר שיעזור לנו להבין בדיוק איך אנחנו יכולים לעזור 🛠️💬
+📋 השאלון לוקח כמה דקות בלבד – והוא מאפשר לנו להגיע לשיחה מוכנים, עם רעיונות שמתאימים בול לעסק שלכם 🎯
+✨ זה הזמן לחסוך זמן ⏱️, לשפר תהליכים ⚙️, ולעבוד חכם – במקום קשה.
+מוכנים להתחיל? מכאן 👇
+
             </p>
           </div>
         </div>
