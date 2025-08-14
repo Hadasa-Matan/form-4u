@@ -355,8 +355,8 @@ const SurveyForm = () => {
           <div className="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4">
             <CheckCircle2 className="w-8 h-8 text-green-500" />
           </div>
-          <h2 className="text-2xl font-bold text-gray-800 mb-2">תודה רבה! 🎉</h2>
-          <p className="text-gray-600 mb-6">השאלון נשלח בהצלחה. נחזור אליכם בקרוב עם פתרון מותאם אישית לעסק שלכם.</p>
+          <h2 className="text-2xl font-bold text-gray-800 mb-2">תודה רבה 🎉</h2>
+          <p className="text-gray-600 mb-6">השאלון נשלח בהצלחה.</p>
                       <button 
               onClick={() => {
                 setIsSubmitted(false);
@@ -367,7 +367,6 @@ const SurveyForm = () => {
             >
               מלאו שאלון נוסף
             </button>
-            <p className="text-xs text-gray-500 mt-4">נשלח בהצלחה למייל</p>
 </div>
       </div>
     );
