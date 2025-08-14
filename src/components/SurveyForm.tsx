@@ -1,5 +1,5 @@
 import React, { useEffect, useRef, useState } from 'react';
-import { ChevronDown, ArrowRight, ArrowLeft, CheckCircle2, Building, Users, Target, MessageSquare, Bot, Sparkles } from 'lucide-react';
+import { ChevronDown, ArrowRight, ArrowLeft, CheckCircle2, Building, Users, Target, MessageSquare, Bot, Sparkles, Star } from 'lucide-react';
 import emailjs from '@emailjs/browser';
 
 interface FormData {
@@ -56,6 +56,7 @@ interface FormData {
   // צרכים מהבוט
   botGoals: string[];
   availability: string[];
+  challengeRatings: Record<string, number>;
   hasExistingContent: boolean;
   existingContentDetails: string;
   designPreferences: string;
@@ -106,6 +107,7 @@ const initialFormData: FormData = {
   upsellingDetails: '',
   botGoals: [],
   availability: [],
+  challengeRatings: {},
   hasExistingContent: false,
   existingContentDetails: '',
   designPreferences: '',
@@ -119,7 +121,7 @@ const SurveyForm = () => {
   const [isSubmitted, setIsSubmitted] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [submitError, setSubmitError] = useState<string | null>(null);
-  const totalSteps = 8;
+  const totalSteps = 9;
   const topRef = useRef<HTMLDivElement | null>(null);
 
   useEffect(() => {
@@ -183,6 +185,7 @@ const SurveyForm = () => {
     upsellingDetails: 'פרטי אפסייל',
     botGoals: 'מטרות מהבוט',
     availability: 'זמינות',
+    challengeRatings: 'דירוגי אתגרים',
     hasExistingContent: 'תוכן קיים?',
     existingContentDetails: 'פרטי התוכן הקיים',
     designPreferences: 'העדפות עיצוב',
@@ -235,6 +238,12 @@ const SurveyForm = () => {
       Object.entries(formData).forEach(([key, value]) => {
         if (Array.isArray(value)) {
           normalized[key] = value.join(', ');
+        } else if (key === 'challengeRatings' && typeof value === 'object') {
+          const ratings = value as Record<string, number>;
+          normalized[key] = Object.entries(ratings)
+            .filter(([_, rating]) => rating > 0)
+            .map(([challenge, rating]) => `${challenge}: ${rating} כוכבים`)
+            .join(', ');
         } else if (typeof value === 'boolean') {
           normalized[key] = value ? 'כן' : 'לא';
         } else {
@@ -346,6 +355,46 @@ const SurveyForm = () => {
         <span className="text-sm">{label}</span>
       </label>
     );
+  };
+
+  const StarRating = ({ challenge, rating, onRatingChange }: { 
+    challenge: string, 
+    rating: number, 
+    onRatingChange: (rating: number) => void 
+  }) => {
+    return (
+      <div className="flex items-center justify-between p-4 border rounded-lg hover:bg-gray-50 transition-colors">
+        <span className="text-sm flex-1 ml-4">{challenge}</span>
+        <div className="flex items-center space-x-1">
+          {[1, 2, 3, 4, 5].map((star) => (
+            <button
+              key={star}
+              type="button"
+              onClick={() => onRatingChange(star)}
+              className="focus:outline-none transition-colors"
+            >
+              <Star
+                className={`w-6 h-6 ${
+                  star <= rating
+                    ? 'text-yellow-400 fill-current'
+                    : 'text-gray-300 hover:text-yellow-200'
+                }`}
+              />
+            </button>
+          ))}
+        </div>
+      </div>
+    );
+  };
+
+  const handleRatingChange = (challenge: string, rating: number) => {
+    setFormData(prev => ({
+      ...prev,
+      challengeRatings: {
+        ...prev.challengeRatings,
+        [challenge]: rating
+      }
+    }));
   };
 
   if (isSubmitted) {
@@ -844,6 +893,93 @@ const SurveyForm = () => {
         return (
           <div className="space-y-6">
             <div className="text-center mb-8">
+              <Star className="w-12 h-12 text-yellow-500 mx-auto mb-4" />
+              <h2 className="text-2xl font-bold text-gray-800 mb-2">דרגת ההזדהות עם אתגרים בעסק</h2>
+              <p className="text-gray-600 mb-4">
+                כוכב אחד = כלל לא מזדהה | חמישה כוכבים = מזדהה במידה רבה מאוד
+              </p>
+            </div>
+            
+            <div className="space-y-3">
+              <StarRating
+                challenge="המזכיר/ה שלי עסוק/ה רוב היום בשאלות חוזרות מלקוחות"
+                rating={formData.challengeRatings['secretary-busy'] || 0}
+                onRatingChange={(rating) => handleRatingChange('secretary-busy', rating)}
+              />
+              
+              <StarRating
+                challenge="מתפספסים לי לידים ועסקאות"
+                rating={formData.challengeRatings['missing-leads'] || 0}
+                onRatingChange={(rating) => handleRatingChange('missing-leads', rating)}
+              />
+              
+              <StarRating
+                challenge="אין לי מספיק מעקב אחרי סטטוס לקוח"
+                rating={formData.challengeRatings['customer-tracking'] || 0}
+                onRatingChange={(rating) => handleRatingChange('customer-tracking', rating)}
+              />
+              
+              <StarRating
+                challenge="יש אצלי עומס של משימות החוזרות על עצמם ביומיום"
+                rating={formData.challengeRatings['repetitive-tasks'] || 0}
+                onRatingChange={(rating) => handleRatingChange('repetitive-tasks', rating)}
+              />
+              
+              <StarRating
+                challenge="חוסר יכולת להעניק מענה מהיר לשאלות ופניות של לקוחות"
+                rating={formData.challengeRatings['slow-response'] || 0}
+                onRatingChange={(rating) => handleRatingChange('slow-response', rating)}
+              />
+              
+              <StarRating
+                challenge="עומס של המשימות הידניות גורם לי לאבד מידע חשוב"
+                rating={formData.challengeRatings['losing-info'] || 0}
+                onRatingChange={(rating) => handleRatingChange('losing-info', rating)}
+              />
+              
+              <StarRating
+                challenge="לקוחות שאינם מקבלים תשובות מהירות עלולים לבחור במתחרים"
+                rating={formData.challengeRatings['competitors-advantage'] || 0}
+                onRatingChange={(rating) => handleRatingChange('competitors-advantage', rating)}
+              />
+              
+              <StarRating
+                challenge="הצורך בגלישה בין כמה מערכות כדי לסנכרן מידע מבזבז לי זמן יקר"
+                rating={formData.challengeRatings['system-switching'] || 0}
+                onRatingChange={(rating) => handleRatingChange('system-switching', rating)}
+              />
+              
+              <StarRating
+                challenge="בזמן שאנחנו כותבים מיילים ומתקשרים, המתחרים שלנו מתקדמים"
+                rating={formData.challengeRatings['manual-work-delay'] || 0}
+                onRatingChange={(rating) => handleRatingChange('manual-work-delay', rating)}
+              />
+              
+              <StarRating
+                challenge="הלקוחות שלי מתקשים למצוא תשובות לשאלות נפוצות בצורה מהירה"
+                rating={formData.challengeRatings['faq-access'] || 0}
+                onRatingChange={(rating) => handleRatingChange('faq-access', rating)}
+              />
+              
+              <StarRating
+                challenge="הלקוחות שלי לא מצליחים להגיע לשירותים שהעסק שלי מציע בגלל חוסר במידע זמין ויעיל"
+                rating={formData.challengeRatings['service-discovery'] || 0}
+                onRatingChange={(rating) => handleRatingChange('service-discovery', rating)}
+              />
+            </div>
+            
+            <div className="bg-blue-50 p-4 rounded-lg">
+              <p className="text-blue-700 text-sm">
+                💡 <strong>טיפ:</strong> הדירוגים שלכם יעזרו לנו להתמקד בפתרונות שיביאו לכם את התוצאות הכי משמעותיות
+              </p>
+            </div>
+          </div>
+        );
+
+      case 8:
+        return (
+          <div className="space-y-6">
+            <div className="text-center mb-8">
               <Sparkles className="w-12 h-12 text-blue-500 mx-auto mb-4" />
               <h2 className="text-2xl font-bold text-gray-800 mb-2">ניסיון קודם</h2>
               <p className="text-gray-600">ספרו לנו על הניסיון שלכם עם אוטומציה</p>
@@ -897,7 +1033,7 @@ const SurveyForm = () => {
           </div>
         );
 
-      case 8:
+      case 9:
         return (
           <div className="space-y-6">
             <div className="text-center mb-8">
