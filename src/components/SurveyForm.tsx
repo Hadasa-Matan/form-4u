@@ -230,23 +230,26 @@ const SurveyForm = () => {
 
   const handleSubmit = async () => {
     setSubmitError(null);
-        const missing: string[] = [];
-    if (!formData.businessName?.trim()) missing.push('שם העסק');
-    if (!formData.contactName?.trim()) missing.push('שם איש הקשר');
-    if (!formData.email?.trim()) missing.push('כתובת מייל');
+ const missing: string[] = [];
+if (!formData.businessName?.trim()) missing.push('שם העסק');
+if (!formData.contactName?.trim()) missing.push('שם איש הקשר');
+if (!formData.email?.trim()) missing.push('כתובת מייל');
 
-    const emailInvalid =
-      !!formData.email?.trim() &&
-      !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.email);
+const emailInvalid =
+  !!formData.email?.trim() &&
+  !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.email);
 
-    if (missing.length > 0 || emailInvalid) {
-      const msg = [
-        missing.length ? `שדות חובה חסרים: ${missing.join(', ')}` : null,
-        emailInvalid ? 'כתובת המייל אינה תקינה' : null,
-      ].filter(Boolean).join(' | ');
-      setSubmitError(msg);
-      return;
-    }
+if (missing.length > 0 || emailInvalid) {
+  const msg = [
+    missing.length ? `שדות חובה חסרים: ${missing.join(', ')}` : null,
+    emailInvalid ? 'כתובת המייל אינה תקינה' : null,
+  ].filter(Boolean).join(' | ');
+
+  alert(msg);            // מציג הודעה
+  setSubmitError(msg);   // אופציונלי לתצוגה פנימית
+  setCurrentStep(1);     // מחזיר לעמוד הראשון
+  return;                // עוצר שליחה
+}
     setIsSubmitting(true);
     try {
       const toEmail = import.meta.env.VITE_FORM_RECEIVER_EMAIL;
@@ -1086,18 +1089,13 @@ const SurveyForm = () => {
               </ul>
             </div>
             
-            <button
-              onClick={handleSubmit}
-              disabled={
-                isSubmitting ||
-                !formData.businessName?.trim() ||
-                !formData.contactName?.trim() ||
-                !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.email || '')
-              }
-              className={`w-full bg-gradient-to-r from-blue-500 to-indigo-600 text-white px-8 py-4 rounded-lg font-medium transition-all transform shadow-lg ${isSubmitting ? 'opacity-60 cursor-not-allowed' : 'hover:from-blue-600 hover:to-indigo-700 hover:scale-105'}`}
-            >
-              {isSubmitting ? 'שולח...' : '🚀 שלחו את השאלון'}
-            </button>
+<button
+  onClick={handleSubmit}
+  disabled={isSubmitting}
+  className={`w-full bg-gradient-to-r from-blue-500 to-indigo-600 text-white px-8 py-4 rounded-lg font-medium transition-all transform shadow-lg ${isSubmitting ? 'opacity-60 cursor-not-allowed' : 'hover:from-blue-600 hover:to-indigo-700 hover:scale-105'}`}
+>
+  {isSubmitting ? 'שולח...' : '🚀 שלחו את השאלון'}
+</button>
             {submitError && (
               <p className="text-red-600 text-sm mt-2">{submitError}</p>
             )}
