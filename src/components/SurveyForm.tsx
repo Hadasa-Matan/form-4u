@@ -829,7 +829,7 @@ const SurveyForm = () => {
                 <CheckboxOption field="availability" value="business-hours" label="🕘 שעות העבודה בלבד" />
                 <CheckboxOption field="availability" value="evenings" label="🌆 גם בערבים" />
                 <CheckboxOption field="availability" value="weekends" label="📅 גם בסופי שבוע" />
-                <CheckboxOption field="availability" value="no-shabbat" label="🕯️ ללא שבת וחגים" />
+                <CheckboxOption field="availability" value="no-shabbat" label="🕯️ ללא שבתות וחגים" />
               </div>
             </div>
             
