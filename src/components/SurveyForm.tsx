@@ -406,16 +406,12 @@ const SurveyForm = () => {
           </div>
           <h2 className="text-2xl font-bold text-gray-800 mb-2">תודה רבה 🎉</h2>
           <p className="text-gray-600 mb-6">השאלון נשלח בהצלחה.</p>
-                      <button 
-              onClick={() => {
-                setIsSubmitted(false);
-                setCurrentStep(1);
-                setFormData(initialFormData);
-              }}
-              className="text-blue-500 hover:text-blue-600 font-medium"
-            >
-              מלאו שאלון נוסף
-            </button>
+                             <a
+            href="https://cal.com/hadasa-matan/4u"
+            className="text-blue-500 hover:text-blue-600 font-medium"
+          >
+            איזה יופי שמילאת! ועכשו לשלב קבלת פתרונות מותאמים לנתונים שמילאת, קבע/י פגישה בזמן שנוח לך
+          </a>
 </div>
       </div>
     );
