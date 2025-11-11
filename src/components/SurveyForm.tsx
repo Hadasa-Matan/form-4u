@@ -181,7 +181,7 @@ const SurveyForm = () => {
     responseTime: 'זמן תגובה',
     hasKPIs: 'יש KPI?',
     unclosedLeadsProcess: 'טיפול בלידים שלא נסגרו',
-    hasUpselling: 'יש אפסייל?',
+    hasUpselling: 'פעולות להגדלת שווי הלקוחות הקיימים',
     upsellingDetails: 'פרטי אפסייל',
     botGoals: 'מטרות מהבוט',
     availability: 'זמינות',
@@ -665,10 +665,10 @@ if (missing.length > 0 || emailInvalid) {
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-3">איך כרגע מתנהל שירות הלקוחות בעסק שלכם?</label>
               <div className="space-y-2">
-                <RadioOption field="customerService" value="owner-only" label="🧑‍💼 אני בעצמי עונה לכל הפניות" />
-                <RadioOption field="customerService" value="employees" label="👥 יש צוות שטיפול בפניות" />
-                <RadioOption field="customerService" value="mixed" label="🔄 חלק אני וחלק העובדים" />
-                <RadioOption field="customerService" value="outsourced" label="🏢 מיקור חוץ" />
+                <RadioOption field="customerService" value="אני עונה בעצמי לכל הפניות" label="🧑‍💼 אני בעצמי עונה לכל הפניות" />
+                <RadioOption field="customerService" value="עובדים" label="👥 יש צוות שמטפל בפניות" />
+                <RadioOption field="customerService" value="חלק אני וחלק העובדים" label="🔄 חלק אני וחלק העובדים" />
+                <RadioOption field="customerService" value="מיקור חוץ" label="🏢 מיקור חוץ" />
               </div>
             </div>
             
@@ -678,35 +678,35 @@ if (missing.length > 0 || emailInvalid) {
                 <RadioOption field="inquiryVolume" value="1-5-daily" label="1-5 ביום" />
                 <RadioOption field="inquiryVolume" value="5-20-daily" label="5-20 ביום" />
                 <RadioOption field="inquiryVolume" value="20-50-daily" label="20-50 ביום" />
-                <RadioOption field="inquiryVolume" value="50+-daily" label="יותר מ-50 ביום" />
+                <RadioOption field="inquiryVolume" value="יותר מ50 ביום" label="יותר מ-50 ביום" />
               </div>
             </div>
             
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-3">מאיפה הפניות מתקבלות?</label>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
-                <CheckboxOption field="inquirySources" value="website" label="🌐 האתר שלנו" />
-                <CheckboxOption field="inquirySources" value="phone" label="📞 טלפון ישיר" />
-                <CheckboxOption field="inquirySources" value="facebook" label="📘 פייסבוק" />
-                <CheckboxOption field="inquirySources" value="instagram" label="📸 אינסטגרם" />
-                <CheckboxOption field="inquirySources" value="google-ads" label="🔍 גוגל אדס" />
-                <CheckboxOption field="inquirySources" value="referrals" label="👤 הפניות מלקוחות" />
-                <CheckboxOption field="inquirySources" value="email" label="📧 מייל" />
-                <CheckboxOption field="inquirySources" value="whatsapp" label="📱 וואטסאפ" />
+                <CheckboxOption field="inquirySources" value="אתר" label="🌐 האתר שלנו" />
+                <CheckboxOption field="inquirySources" value="טלפון ישיר" label="📞 טלפון ישיר" />
+                <CheckboxOption field="inquirySources" value="פיסבוק" label="📘 פייסבוק" />
+                <CheckboxOption field="inquirySources" value="אינסטגרם" label="📸 אינסטגרם" />
+                <CheckboxOption field="inquirySources" value="גוגל אדס" label="🔍 גוגל אדס" />
+                <CheckboxOption field="inquirySources" value="הפניות מלקוחות" label="👤 הפניות מלקוחות" />
+                <CheckboxOption field="inquirySources" value="מייל" label="📧 מייל" />
+                <CheckboxOption field="inquirySources" value="וואטסאפ" label="📱 וואטסאפ" />
               </div>
             </div>
             
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-3">אילו סוגי שאלות נפוצות אתם מקבלים?</label>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
-                <CheckboxOption field="commonQuestions" value="pricing" label="💰 שאלות על מחירים" />
-                <CheckboxOption field="commonQuestions" value="availability" label="📅 זמינות ותיאום" />
-                <CheckboxOption field="commonQuestions" value="services" label="🔧 פרטים על השירותים" />
-                <CheckboxOption field="commonQuestions" value="process" label="📋 איך התהליך עובד" />
-                <CheckboxOption field="commonQuestions" value="timeline" label="⏰ כמה זמן לוקח" />
-                <CheckboxOption field="commonQuestions" value="location" label="📍 מיקום וכתובת" />
-                <CheckboxOption field="commonQuestions" value="support" label="🛠️ תמיכה טכנית" />
-                <CheckboxOption field="commonQuestions" value="refunds" label="↩️ מדיניות החזרות" />
+                <CheckboxOption field="commonQuestions" value="מחירים" label="💰 שאלות על מחירים" />
+                <CheckboxOption field="commonQuestions" value="זמינות ותיאום" label="📅 זמינות ותיאום" />
+                <CheckboxOption field="commonQuestions" value="מכירות ושירותים" label="🔧 פרטים על השירותים" />
+                <CheckboxOption field="commonQuestions" value="איך התהליך עובד" label="📋 איך התהליך עובד" />
+                <CheckboxOption field="commonQuestions" value="תשלומים וחשבוניות" label="💵 תשלומים וחשבוניות" />
+                <CheckboxOption field="commonQuestions" value="מיקום וכתובת" label="📍 מיקום וכתובת" />
+                <CheckboxOption field="commonQuestions" value="תמיכה טכנית" label="🛠️ תמיכה טכנית" />
+                <CheckboxOption field="commonQuestions" value="החזרות" label="↩️ מדיניות החזרות" />
               </div>
             </div>
           </div>
