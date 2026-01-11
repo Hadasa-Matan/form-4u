@@ -9,16 +9,36 @@ const SurveyForm = () => {
   const fontStyle = { fontFamily: '"FbAsparagos", sans-serif' };
 
   const [formData, setFormData] = useState({
-    // שלבים 1-5
-    contactName: '', email: '', phone: '', businessName: '', businessField: '', discoverySource: '', businessSector: '', employeeCount: '',
-    challenges: [], timeWasters: [], goals: [], successMetric: '',
-    // שלבים 6-11
-    serviceManagement: [], leadSources: [], commonQuestions: [],
-    monthlyLeads: '', salesProcess: [], responseTime: '', hasKpi: '', upsellProcess: '', lostLeadsProcess: '',
-    botGoals: [], botActiveTime: [], existingContent: '', designPreferences: '',
+    contactName: '',
+    email: '',
+    phone: '',
+    businessName: '',
+    businessField: '',
+    discoverySource: '',
+    businessSector: '',
+    employeeCount: '',
+    challenges: [],
+    timeWasters: [],
+    goals: [],
+    successMetric: '',
+    serviceManagement: [],
+    leadSources: [],
+    commonQuestions: [],
+    monthlyLeads: '',
+    salesProcess: [],
+    responseTime: '',
+    hasKpi: '',
+    upsellProcess: '',
+    lostLeadsProcess: '',
+    botGoals: [],
+    botActiveTime: [],
+    existingContent: '',
+    designPreferences: '',
     starRatings: {},
-    revenue: '', digitalPresence: '',
-    priorExperience: '', userExperienceGoal: ''
+    revenue: '',
+    digitalPresence: '',
+    priorExperience: '',
+    userExperienceGoal: ''
   });
 
   const [currentStep, setCurrentStep] = useState(0);
@@ -36,7 +56,10 @@ const SurveyForm = () => {
   const handleCheckboxChange = (field, option) => {
     setFormData(prev => {
       const current = prev[field] || [];
-      return { ...prev, [field]: current.includes(option) ? current.filter(i => i !== option) : [...current, option] };
+      if (current.includes(option)) {
+        return { ...prev, [field]: current.filter(i => i !== option) };
+      }
+      return { ...prev, [field]: [...current, option] };
     });
   };
 
@@ -50,191 +73,279 @@ const SurveyForm = () => {
   const nextStep = () => {
     if (currentStep === 1) {
       if (!formData.contactName.trim() || !formData.email.trim()) {
-        setError('נא למלא שם ואימייל תקינים');
+        setError('נא למלא שם ואימייל תקינים כדי שנוכל לחזור אליך');
         return;
       }
     }
-    if (currentStep === totalSteps) { handleSubmit(); return; }
-    window.scrollTo({ top: 0, behavior: 'smooth' });
-    setCurrentStep(prev => prev + 1);
+    
+    if (currentStep < totalSteps) {
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+      setCurrentStep(prev => prev + 1);
+    }
   };
 
   const prevStep = () => {
-    setCurrentStep(prev => prev - 1);
+    if (currentStep > 0) {
+      setCurrentStep(prev => prev - 1);
+    }
   };
 
   const handleSubmit = async () => {
     setIsSubmitting(true);
+    setError('');
+    
     try {
+      const templateParams = {
+        ...formData,
+        star_ratings: Object.entries(formData.starRatings)
+          .map(([q, r]) => `${q}: ${r}/5`)
+          .join('\n'),
+        challenges: formData.challenges.join(', '),
+        timeWasters: formData.timeWasters.join(', '),
+        goals: formData.goals.join(', '),
+        serviceManagement: formData.serviceManagement.join(', '),
+        leadSources: formData.leadSources.join(', '),
+        commonQuestions: formData.commonQuestions.join(', '),
+        salesProcess: formData.salesProcess.join(', '),
+        botGoals: formData.botGoals.join(', '),
+        botActiveTime: formData.botActiveTime.join(', ')
+      };
+
       await emailjs.send(
         'service_04u46mc',
         'template_44cshno',
-        { ...formData, star_ratings: JSON.stringify(formData.starRatings) },
+        templateParams,
         '0MvQ0-Daq0m7nbe2D'
       );
+      
       setIsSuccess(true);
+      window.scrollTo({ top: 0, behavior: 'smooth' });
     } catch (err) {
-      setError('שגיאה בשליחה. נסו שוב.');
+      setError('חלה שגיאה בשליחת הטופס. נא לבדוק את החיבור לאינטרנט ולנסות שוב.');
+      console.error('EmailJS Error:', err);
     } finally {
       setIsSubmitting(false);
     }
   };
 
-  // רכיבי עזר לעיצוב
   const CheckboxOption = ({ field, label, emoji }) => (
-    <label className={`flex items-center justify-between p-4 rounded-2xl border-2 transition-all cursor-pointer mb-2 ${formData[field]?.includes(label) ? 'border-[#000ab9] bg-blue-50 shadow-md' : 'border-slate-100 hover:border-slate-200'}`}>
+    <label className={`flex items-center justify-between p-4 rounded-2xl border-2 transition-all cursor-pointer mb-2 ${
+      formData[field]?.includes(label) 
+        ? 'border-[#000ab9] bg-blue-50 shadow-md transform scale-[1.01]' 
+        : 'border-slate-100 hover:border-slate-200 bg-white'
+    }`}>
       <div className="flex items-center gap-3">
-        <input type="checkbox" className="w-5 h-5 accent-[#000ab9]" checked={formData[field]?.includes(label)} onChange={() => handleCheckboxChange(field, label)} />
-        <span className="font-bold text-slate-700">{label} {emoji}</span>
+        <div className={`w-6 h-6 rounded-md border-2 flex items-center justify-center transition-all ${
+          formData[field]?.includes(label) ? 'bg-[#000ab9] border-[#000ab9]' : 'border-slate-300'
+        }`}>
+          {formData[field]?.includes(label) && <Check size={16} className="text-white" />}
+        </div>
+        <span className="font-bold text-slate-700 text-lg">{label} {emoji}</span>
       </div>
+      <input 
+        type="checkbox" 
+        className="hidden" 
+        checked={formData[field]?.includes(label)} 
+        onChange={() => handleCheckboxChange(field, label)} 
+      />
     </label>
   );
 
   const RadioOption = ({ field, label, value }) => (
-    <label className={`flex items-center justify-between p-4 rounded-2xl border-2 transition-all cursor-pointer mb-2 ${formData[field] === value ? 'border-[#000ab9] bg-blue-50 shadow-md' : 'border-slate-100 hover:border-slate-200'}`}>
+    <label className={`flex items-center justify-between p-4 rounded-2xl border-2 transition-all cursor-pointer mb-2 ${
+      formData[field] === value 
+        ? 'border-[#000ab9] bg-blue-50 shadow-md transform scale-[1.01]' 
+        : 'border-slate-100 hover:border-slate-200 bg-white'
+    }`}>
       <div className="flex items-center gap-3">
-        <input type="radio" name={field} className="w-5 h-5 accent-[#000ab9]" checked={formData[field] === value} onChange={() => handleInputChange(field, value)} />
-        <span className="font-bold text-slate-700">{label}</span>
+        <div className={`w-6 h-6 rounded-full border-2 flex items-center justify-center transition-all ${
+          formData[field] === value ? 'border-[#000ab9]' : 'border-slate-300'
+        }`}>
+          {formData[field] === value && <div className="w-3 h-3 bg-[#000ab9] rounded-full" />}
+        </div>
+        <span className="font-bold text-slate-700 text-lg">{label}</span>
       </div>
+      <input 
+        type="radio" 
+        className="hidden" 
+        name={field}
+        checked={formData[field] === value} 
+        onChange={() => handleInputChange(field, value)} 
+      />
     </label>
   );
 
   if (isSuccess) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-[#f8fafc] p-4" dir="rtl" style={fontStyle}>
-        <div className="bg-white p-12 rounded-[40px] shadow-2xl text-center max-w-lg w-full border-t-8 border-[#52de4a]">
-          <CheckCircle2 size={80} className="text-[#52de4a] mx-auto mb-6" />
-          <h2 className="text-3xl font-bold text-[#000ab9] mb-4">תודה רבה!</h2>
-          <p className="text-slate-600 text-lg">האבחון נשלח אלינו בהצלחה.</p>
+      <div className="min-h-screen flex items-center justify-center bg-[#f8fafc] p-4 text-right" dir="rtl">
+        <style>{`* { font-family: "FbAsparagos", sans-serif !important; }`}</style>
+        <div className="bg-white p-12 rounded-[40px] shadow-2xl text-center max-w-2xl w-full border-t-[12px] border-[#52de4a] animate-in zoom-in duration-500">
+          <div className="mb-8 bg-green-50 w-28 h-28 rounded-full flex items-center justify-center mx-auto shadow-inner">
+            <CheckCircle2 size={70} className="text-[#52de4a]" />
+          </div>
+          <h2 className="text-5xl font-black text-[#000ab9] mb-6">האבחון נשלח בהצלחה!</h2>
+          <div className="space-y-6 text-slate-600 text-2xl font-medium leading-relaxed">
+            <p>תודה רבה על השיתוף ועל הזמן שהקדשת.</p>
+            <div className="bg-blue-50 p-8 rounded-[30px] border-r-8 border-[#000ab9] text-[#000ab9] font-bold shadow-sm">
+              ב-24 השעות הקרובות ישלח אליך סיכום האבחון המלא יחד עם המלצות ראשוניות לייעול והטמעת בינה מלאכותית בעסק שלך. 🚀
+            </div>
+            <p className="text-lg text-slate-400 italic">נתראה בקרוב!</p>
+          </div>
         </div>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen py-8 px-4 bg-[#f8fafc]" dir="rtl" style={fontStyle}>
+    <div className="min-h-screen py-12 px-4 bg-[#f8fafc] selection:bg-blue-100" dir="rtl" style={fontStyle}>
+      <style>{`
+        * { font-family: "FbAsparagos", sans-serif !important; }
+        input::placeholder, textarea::placeholder { font-family: "FbAsparagos", sans-serif !important; }
+        button, input, select, textarea { outline: none !important; }
+      `}</style>
+      
       <div className="max-w-4xl mx-auto">
-
-        {/* Progress Bar */}
         {currentStep > 0 && (
-          <div className="mb-8 px-4">
+          <div className="mb-10 px-4">
             <div className="flex justify-between items-end mb-4 font-bold text-[#000ab9]">
-              <span className="text-xl font-black italic">הדסה מתן | אבחון עסק חכם</span>
-              <span className="text-sm bg-blue-100 px-3 py-1 rounded-full">שלב {currentStep} מתוך {totalSteps}</span>
+              <span className="text-2xl font-black italic tracking-tight">הדסה מתן | אבחון עסק חכם</span>
+              <span className="text-base bg-blue-100 px-4 py-1.5 rounded-full shadow-sm">שלב {currentStep} מתוך {totalSteps}</span>
             </div>
-            <div className="h-3 w-full bg-white rounded-full shadow-inner border border-slate-100 overflow-hidden p-0.5">
-              <div className="h-full bg-gradient-to-r from-[#7cd6de] to-[#52de4a] rounded-full transition-all duration-700" style={{ width: `${(currentStep / totalSteps) * 100}%` }} />
+            <div className="h-4 w-full bg-white rounded-full shadow-inner border border-slate-100 overflow-hidden p-1">
+              <div 
+                className="h-full bg-gradient-to-r from-[#7cd6de] to-[#52de4a] rounded-full transition-all duration-1000 ease-out" 
+                style={{ width: `${(currentStep / totalSteps) * 100}%` }} 
+              />
             </div>
           </div>
         )}
 
-        <div className="bg-white rounded-[40px] shadow-2xl p-8 md:p-16 border-b-[12px] border-[#000ab9] min-h-[650px] flex flex-col justify-between">
+        <div className="bg-white rounded-[50px] shadow-2xl p-10 md:p-20 border-b-[15px] border-[#000ab9] min-h-[700px] flex flex-col justify-between relative overflow-hidden">
+          <div className="absolute top-0 right-0 w-32 h-32 bg-blue-50 rounded-bl-full opacity-50 -z-0" />
+          
+          <div className="animate-in fade-in slide-in-from-bottom-8 duration-700 relative z-10 text-right">
 
-          <div className="animate-in fade-in slide-in-from-bottom-4 duration-500">
-
-            {/* שלב 0 - פתיחה */}
             {currentStep === 0 && (
-              <div className="space-y-6 text-right leading-relaxed text-slate-700">
-                <div className="text-center mb-8"><Zap size={48} className="text-[#000ab9] mx-auto animate-pulse" /><h1 className="text-4xl font-black text-[#000ab9] mt-4">שאלון לאבחון העסק 🤖</h1></div>
-                <h2 className="text-3xl font-bold">היי 😄</h2>
-                <p className="text-xl italic font-medium">אנחנו יודעים שאתם עמוסים – אולי בין לקוח לשיחה 📞, אולי רגע לפני הפסקת קפה ☕,</p>
-                <p className="text-2xl font-bold text-[#000ab9]">אבל אם הגעתם לפה – כנראה שאתם רוצים להפוך את העסק שלכם לחכם, יעיל וחסכוני יותר 🧠</p>
-                <div className="bg-slate-50 p-6 rounded-3xl border-r-4 border-[#7cd6de] font-bold text-xl italic">📋 השאלון לוקח כמה דקות בלבד ומאפשר לנו להגיע לשיחה מוכנים 🎯</div>
-                <p className="text-center text-[#000ab9] font-black animate-bounce text-2xl pt-6">מוכנים להתחיל? מכאן 👇</p>
+              <div className="space-y-8 leading-relaxed text-slate-700">
+                <div className="text-center mb-10">
+                  <div className="bg-blue-50 w-24 h-24 rounded-3xl flex items-center justify-center mx-auto mb-6 transform rotate-12 shadow-sm">
+                    <Zap size={50} className="text-[#000ab9] animate-pulse" />
+                  </div>
+                  <h1 className="text-5xl font-black text-[#000ab9] mt-4 tracking-tighter">שאלון לאבחון העסק 🤖</h1>
+                </div>
+                <h2 className="text-4xl font-bold text-slate-800">היי 😄</h2>
+                <p className="text-2xl italic font-medium leading-relaxed">אנחנו יודעים שאתם עמוסים – אולי בין לקוח לשיחה 📞, אולי רגע לפני הפסקת קפה ☕,</p>
+                <p className="text-3xl font-black text-[#000ab9] leading-tight">אבל אם הגעתם לפה – כנראה שאתם רוצים להפוך את העסק שלכם לחכם, יעיל וחסכוני יותר 🧠</p>
+                <div className="bg-gradient-to-l from-slate-50 to-white p-8 rounded-[35px] border-r-8 border-[#7cd6de] font-bold text-2xl italic shadow-sm">
+                  📋 השאלון לוקח כמה דקות בלבד ומאפשר לנו להגיע לשיחה מוכנים ומדויקים עבורכם 🎯
+                </div>
+                <p className="text-center text-[#000ab9] font-black animate-bounce text-3xl pt-10">מוכנים להתחיל? מכאן 👇</p>
               </div>
             )}
 
-            {/* שלב 1 - פרטים */}
             {currentStep === 1 && (
-              <div className="space-y-8">
-                <div className="text-center"><Building size={40} className="text-[#000ab9] mx-auto mb-4" /><h2 className="text-3xl font-bold text-[#000ab9]">נעים להכיר</h2></div>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6 text-right font-bold">
-                  <div className="space-y-2 text-[#000ab9]"><label className="block italic">* שם מלא</label><input type="text" style={fontStyle} placeholder="השם שלך" className="w-full p-4 bg-slate-50 rounded-2xl border-2 border-transparent focus:border-[#7cd6de] outline-none" value={formData.contactName} onChange={(e) => handleInputChange('contactName', e.target.value)} /></div>
-                  <div className="space-y-2 text-[#000ab9]"><label className="block italic">* אימייל</label><input type="email" style={fontStyle} placeholder="email@example.com" dir="ltr" className="w-full p-4 bg-slate-50 rounded-2xl border-2 border-transparent focus:border-[#7cd6de] outline-none text-right" value={formData.email} onChange={(e) => handleInputChange('email', e.target.value)} /></div>
-                  <div className="space-y-2 text-[#000ab9]"><label className="block italic">טלפון</label><input type="text" style={fontStyle} placeholder="050-0000000" className="w-full p-4 bg-slate-50 rounded-2xl border-2 border-transparent focus:border-[#7cd6de] outline-none text-right" value={formData.phone} onChange={(e) => handleInputChange('phone', e.target.value)} /></div>
-                  <div className="space-y-2 text-[#000ab9]"><label className="block italic">שם העסק</label><input type="text" style={fontStyle} placeholder="שם העסק שלך" className="w-full p-4 bg-slate-50 rounded-2xl border-2 border-transparent focus:border-[#7cd6de] outline-none text-right" value={formData.businessName} onChange={(e) => handleInputChange('businessName', e.target.value)} /></div>
-                  <div className="space-y-2 text-[#000ab9]"><label className="block italic">תחום העסק</label><input type="text" style={fontStyle} placeholder="במה העסק עוסק?" className="w-full p-4 bg-slate-50 rounded-2xl border-2 border-transparent focus:border-[#7cd6de] outline-none text-right" value={formData.businessSector} onChange={(e) => handleInputChange('businessSector', e.target.value)} /></div>
-                  <div className="space-y-2 text-[#000ab9]"><label className="block italic">מקור הגעה</label><input type="text" style={fontStyle} placeholder="איך הגעתם אלינו?" className="w-full p-4 bg-slate-50 rounded-2xl border-2 border-transparent focus:border-[#7cd6de] outline-none text-right" value={formData.discoverySource} onChange={(e) => handleInputChange('discoverySource', e.target.value)} /></div>
+              <div className="space-y-10">
+                <div className="text-center">
+                  <Building size={50} className="text-[#000ab9] mx-auto mb-4" />
+                  <h2 className="text-4xl font-black text-[#000ab9]">נעים להכיר</h2>
+                  <p className="text-slate-500 text-xl mt-2 font-bold">בואו נתחיל מהבסיס</p>
                 </div>
-                {error && <p className="text-red-500 text-center font-bold">{error}</p>}
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-8 font-bold">
+                  <div className="space-y-3 text-[#000ab9]">
+                    <label className="block text-xl italic">* שם מלא</label>
+                    <input type="text" placeholder="השם שלך" className="w-full p-5 bg-slate-50 rounded-[25px] border-2 border-transparent focus:border-[#7cd6de] focus:bg-white transition-all text-xl shadow-inner" value={formData.contactName} onChange={(e) => handleInputChange('contactName', e.target.value)} />
+                  </div>
+                  <div className="space-y-3 text-[#000ab9]">
+                    <label className="block text-xl italic">* אימייל</label>
+                    <input type="email" placeholder="email@example.com" dir="ltr" className="w-full p-5 bg-slate-50 rounded-[25px] border-2 border-transparent focus:border-[#7cd6de] focus:bg-white transition-all text-xl text-right shadow-inner" value={formData.email} onChange={(e) => handleInputChange('email', e.target.value)} />
+                  </div>
+                  <div className="space-y-3 text-[#000ab9]">
+                    <label className="block text-xl italic">טלפון</label>
+                    <input type="text" placeholder="050-0000000" className="w-full p-5 bg-slate-50 rounded-[25px] border-2 border-transparent focus:border-[#7cd6de] focus:bg-white transition-all text-xl text-right shadow-inner" value={formData.phone} onChange={(e) => handleInputChange('phone', e.target.value)} />
+                  </div>
+                  <div className="space-y-3 text-[#000ab9]">
+                    <label className="block text-xl italic">שם העסק</label>
+                    <input type="text" placeholder="שם העסק שלך" className="w-full p-5 bg-slate-50 rounded-[25px] border-2 border-transparent focus:border-[#7cd6de] focus:bg-white transition-all text-xl text-right shadow-inner" value={formData.businessName} onChange={(e) => handleInputChange('businessName', e.target.value)} />
+                  </div>
+                  <div className="space-y-3 text-[#000ab9]">
+                    <label className="block text-xl italic">תחום העסק</label>
+                    <input type="text" placeholder="במה העסק עוסק?" className="w-full p-5 bg-slate-50 rounded-[25px] border-2 border-transparent focus:border-[#7cd6de] focus:bg-white transition-all text-xl text-right shadow-inner" value={formData.businessSector} onChange={(e) => handleInputChange('businessSector', e.target.value)} />
+                  </div>
+                  <div className="space-y-3 text-[#000ab9]">
+                    <label className="block text-xl italic">איך הגעתם אלינו?</label>
+                    <input type="text" placeholder="פייסבוק, המלצה, גוגל..." className="w-full p-5 bg-slate-50 rounded-[25px] border-2 border-transparent focus:border-[#7cd6de] focus:bg-white transition-all text-xl text-right shadow-inner" value={formData.discoverySource} onChange={(e) => handleInputChange('discoverySource', e.target.value)} />
+                  </div>
+                </div>
+                {error && <div className="bg-red-50 text-red-500 p-4 rounded-2xl text-center font-black border-r-4 border-red-500 animate-bounce">{error}</div>}
               </div>
             )}
 
-            {/* שלב 2 - אתגרים */}
             {currentStep === 2 && (
-              <div className="space-y-6">
-                <div className="text-center"><h2 className="text-3xl font-bold text-[#000ab9]">מה מפריע לכם היום בעסק?</h2></div>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+              <div className="space-y-8">
+                <div className="text-center mb-10"><h2 className="text-4xl font-black text-[#000ab9]">מה מפריע לכם היום בעסק?</h2><p className="text-slate-500 text-xl font-bold">ניתן לבחור כמה אופציות</p></div>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <CheckboxOption field="challenges" label="ניהול זמן לא יעיל" emoji="⏰" />
-                  <CheckboxOption field="challenges" label="שירות לקוחות איטי" emoji="🎯" />
-                  <CheckboxOption field="challenges" label="מעקב אחר לידים" emoji="📞" />
-                  <CheckboxOption field="challenges" label="משימות חוזרות" emoji="🔄" />
-                  <CheckboxOption field="challenges" label="זמינות 24/7" emoji="🕙" />
-                  <CheckboxOption field="challenges" label="קושי בהגדלת העסק" emoji="📈" />
+                  <CheckboxOption field="challenges" label="שירות לקוחות איטי מדי" emoji="🎯" />
+                  <CheckboxOption field="challenges" label="קושי במעקב אחר לידים" emoji="📞" />
+                  <CheckboxOption field="challenges" label="עומס משימות חוזרות" emoji="🔄" />
+                  <CheckboxOption field="challenges" label="חוסר זמינות 24/7" emoji="🕙" />
+                  <CheckboxOption field="challenges" label="קושי בהגדלת העסק (סקיילאביליטי)" emoji="📈" />
                 </div>
               </div>
             )}
 
-            {/* שלב 3 - גוזלי זמן */}
             {currentStep === 3 && (
-              <div className="space-y-6">
-                <div className="text-center"><h2 className="text-3xl font-bold text-[#000ab9]">מהם גוזלי הזמן המרכזיים?</h2></div>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+              <div className="space-y-8">
+                <div className="text-center mb-10"><h2 className="text-4xl font-black text-[#000ab9]">מהם גוזלי הזמן המרכזיים?</h2><p className="text-slate-500 text-xl font-bold">איפה אתם מרגישים שאתם "מתבזבזים"?</p></div>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <CheckboxOption field="timeWasters" label="שיחות טלפון חוזרות" emoji="📞" />
                   <CheckboxOption field="timeWasters" label="מענה למיילים" emoji="📧" />
                   <CheckboxOption field="timeWasters" label="תיאום פגישות" emoji="📅" />
-                  <CheckboxOption field="timeWasters" label="הזנת נתונים" emoji="⌨️" />
-                  <CheckboxOption field="timeWasters" label="שאלות בסיסיות" emoji="❓" />
-                  <CheckboxOption field="timeWasters" label="מעקבים ותזכורות" emoji="👥" />
+                  <CheckboxOption field="timeWasters" label="הזנת נתונים ידנית" emoji="⌨️" />
+                  <CheckboxOption field="timeWasters" label="מענה לשאלות בסיסיות" emoji="❓" />
+                  <CheckboxOption field="timeWasters" label="ביצוע מעקבים ותזכורות" emoji="👥" />
                 </div>
               </div>
             )}
 
-            {/* שלב 4 - מטרות */}
             {currentStep === 4 && (
-              <div className="space-y-6">
-                <div className="text-center"><h2 className="text-3xl font-bold text-[#000ab9]">מה המטרה המרכזית שלכם?</h2></div>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-                  <CheckboxOption field="goals" label="לא לפספס לידים" emoji="🎯" />
-                  <CheckboxOption field="goals" label="להגדיל מכירות" emoji="💰" />
-                  <CheckboxOption field="goals" label="אוטומציה מלאה" emoji="🤖" />
-                  <CheckboxOption field="goals" label="יותר זמן למשפחה" emoji="👨‍👩‍👧‍👦" />
-                  <CheckboxOption field="goals" label="לשפר חוויית לקוח" emoji="✨" />
-                  <CheckboxOption field="goals" label="סינון לידים איכותיים" emoji="🔍" />
+              <div className="space-y-8">
+                <div className="text-center mb-10"><h2 className="text-4xl font-black text-[#000ab9]">מה המטרה המרכזית שלכם?</h2><p className="text-slate-500 text-xl font-bold">מה הכי חשוב לכם להשיג?</p></div>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <CheckboxOption field="goals" label="לא לפספס אף ליד" emoji="🎯" />
+                  <CheckboxOption field="goals" label="להגדיל את המכירות" emoji="💰" />
+                  <CheckboxOption field="goals" label="אוטומציה מלאה של תהליכים" emoji="🤖" />
+                  <CheckboxOption field="goals" label="לפנות זמן למשפחה/פנאי" emoji="👨‍👩‍👧‍👦" />
+                  <CheckboxOption field="goals" label="לשפר את חוויית הלקוח" emoji="✨" />
+                  <CheckboxOption field="goals" label="סינון לידים איכותיים בלבד" emoji="🔍" />
                 </div>
               </div>
             )}
 
-            {/* שלב 5 - הצלחה */}
             {currentStep === 5 && (
-              <div className="space-y-8 text-center">
-                <div className="inline-block p-4 bg-blue-50 rounded-2xl text-[#000ab9] mb-4"><Target size={40} /></div>
-                <h2 className="text-3xl font-bold text-[#000ab9]">מה ייחשב הצלחה עבורכם?</h2>
-                <textarea style={fontStyle} className="w-full p-6 bg-slate-50 rounded-3xl border-2 border-transparent focus:border-[#7cd6de] outline-none h-40 text-right text-lg shadow-inner" placeholder="לדוגמה: להגדיל אחוז המרה ב-25% תוך 4 חודשים..." value={formData.successMetric} onChange={(e) => handleInputChange('successMetric', e.target.value)} />
+              <div className="space-y-10 text-center">
+                <div className="inline-block p-6 bg-blue-50 rounded-[35px] text-[#000ab9] mb-4 shadow-sm transform -rotate-3"><Target size={60} /></div>
+                <h2 className="text-4xl font-black text-[#000ab9]">מה ייחשב הצלחה עבורכם?</h2>
+                <p className="text-slate-500 text-xl font-bold">תארו את המצב האידיאלי בעוד כמה חודשים</p>
+                <textarea className="w-full p-8 bg-slate-50 rounded-[40px] border-2 border-transparent focus:border-[#7cd6de] focus:bg-white outline-none h-56 text-right text-2xl shadow-inner transition-all" placeholder="לדוגמה: להגדיל אחוז המרה ב-25% תוך 4 חודשים..." value={formData.successMetric} onChange={(e) => handleInputChange('successMetric', e.target.value)} />
               </div>
             )}
 
-
-            {/* שלב 6 - ניהול העסק וקבלת פניות */}
             {currentStep === 6 && (
-              <div className="space-y-6">
-                <div className="text-center mb-8">
-                  <h2 className="text-3xl font-bold text-[#000ab9]">ניהול העסק וקבלת פניות</h2>
-                </div>
-
-                <div className="space-y-4">
-                  <p className="font-bold text-slate-700 text-lg">איך כרגע מנוהל שירות הלקוחות בעסק שלכם? (ניתן לבחור כמה)</p>
-                  <div className="grid grid-cols-1 gap-2">
+              <div className="space-y-10">
+                <div className="text-center mb-8"><h2 className="text-4xl font-black text-[#000ab9]">ניהול העסק וקבלת פניות</h2></div>
+                <div className="space-y-6">
+                  <p className="font-bold text-slate-700 text-2xl border-r-4 border-[#7cd6de] pr-4">איך כרגע מנוהל שירות הלקוחות בעסק שלכם?</p>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <CheckboxOption field="serviceManagement" label="אני בעצמי עונה לכל הפניות" emoji="👤" />
-                    <CheckboxOption field="serviceManagement" label="יש צוות שמטפל בפניות" emoji="👥" />
+                    <CheckboxOption field="serviceManagement" label="יש לי צוות שמטפל בפניות" emoji="👥" />
                     <CheckboxOption field="serviceManagement" label="חלק אני וחלק העובדים" emoji="🔄" />
-                    <CheckboxOption field="serviceManagement" label="מיקור חוץ (אאוטסורסינג)" emoji="🏢" />
+                    <CheckboxOption field="serviceManagement" label="יש לנו מיקור חוץ" emoji="🏢" />
                   </div>
                 </div>
-
-                <div className="mt-8">
-                  <p className="font-bold text-slate-700 mb-3 text-lg">מאיפה הפניות מתקבלות? (בחירה מרובה)</p>
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                <div className="mt-12 space-y-6">
+                  <p className="font-bold text-slate-700 text-2xl border-r-4 border-[#7cd6de] pr-4">מאיפה הפניות מתקבלות? (ניתן לבחור כמה)</p>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <CheckboxOption field="leadSources" label="האתר שלנו" emoji="🌐" />
                     <CheckboxOption field="leadSources" label="פייסבוק" emoji="🔵" />
                     <CheckboxOption field="leadSources" label="גוגל אדס" emoji="🔍" />
@@ -242,15 +353,14 @@ const SurveyForm = () => {
                     <CheckboxOption field="leadSources" label="וואטסאפ" emoji="📱" />
                     <CheckboxOption field="leadSources" label="אינסטגרם" emoji="📸" />
                     <CheckboxOption field="leadSources" label="טלפון ישיר" emoji="📞" />
-                    <CheckboxOption field="leadSources" label="הפניות מלקוחות" emoji="👤" />
+                    <CheckboxOption field="leadSources" label="הפניות מלקוחות קיימים" emoji="👤" />
                   </div>
                 </div>
-
-                <div className="mt-8">
-                  <p className="font-bold text-slate-700 mb-3 text-lg">אילו סוגי שאלות נפוצות אתם מקבלים? (בחירה מרובה)</p>
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                <div className="mt-12 space-y-6">
+                  <p className="font-bold text-slate-700 text-2xl border-r-4 border-[#7cd6de] pr-4">אילו סוגי שאלות נפוצות אתם מקבלים?</p>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <CheckboxOption field="commonQuestions" label="שאלות על מחירים" emoji="💰" />
-                    <CheckboxOption field="commonQuestions" label="זמינות ותיאום" emoji="📅" />
+                    <CheckboxOption field="commonQuestions" label="זמינות ותיאום פגישות" emoji="📅" />
                     <CheckboxOption field="commonQuestions" label="פרטים על השירותים" emoji="🔧" />
                     <CheckboxOption field="commonQuestions" label="איך התהליך עובד" emoji="📋" />
                     <CheckboxOption field="commonQuestions" label="תשלומים וחשבוניות" emoji="💵" />
@@ -262,153 +372,86 @@ const SurveyForm = () => {
               </div>
             )}
 
-            {/* שלב 7 - תהליך המכירה שלכם */}
             {currentStep === 7 && (
-              <div className="space-y-6">
-                <div className="text-center mb-8">
-                  <div className="inline-block p-3 bg-blue-100 rounded-full text-[#000ab9] mb-2">
-                    <Target size={32} />
-                  </div>
-                  <h2 className="text-3xl font-bold text-[#000ab9]">תהליך המכירה שלכם</h2>
-                  <p className="text-slate-500">בואו נבין איך הלקוחות הופכים למכירות</p>
-                </div>
-
-                <div className="space-y-4">
-                  <p className="font-bold text-slate-700">מהי כמות הלידים בחודש?</p>
-                  <div className="grid grid-cols-2 md:grid-cols-4 gap-2">
+              <div className="space-y-10">
+                <div className="text-center mb-8"><h2 className="text-4xl font-black text-[#000ab9]">תהליך המכירה שלכם</h2></div>
+                <div className="space-y-6">
+                  <p className="font-bold text-slate-700 text-2xl">מהי כמות הלידים הממוצעת בחודש?</p>
+                  <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
                     {['1-50', '50-200', '200-500', 'יותר מ-500'].map(v => (
-                      <button key={v} onClick={() => handleInputChange('monthlyLeads', v)} className={`p-3 rounded-xl border-2 font-bold transition-all text-sm ${formData.monthlyLeads === v ? 'bg-[#000ab9] text-white border-[#000ab9]' : 'bg-white border-slate-100 text-slate-600'}`}>{v}</button>
+                      <button key={v} onClick={() => handleInputChange('monthlyLeads', v)} className={`p-5 rounded-[25px] border-2 font-bold transition-all text-xl shadow-sm ${formData.monthlyLeads === v ? 'bg-[#000ab9] text-white border-[#000ab9] transform scale-105' : 'bg-white border-slate-100 text-slate-600 hover:border-slate-300'}`}>{v}</button>
                     ))}
                   </div>
                 </div>
-
-                <div className="mt-8 space-y-4">
-                  <p className="font-bold text-slate-700">באיזה אופן תהליך המכירה קורה היום?</p>
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                <div className="mt-12 space-y-6">
+                  <p className="font-bold text-slate-700 text-2xl">באיזה אופן תהליך המכירה קורה היום?</p>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <CheckboxOption field="salesProcess" label="פרונטלי - פגישות פנים אל פנים" emoji="🤝" />
-                    <CheckboxOption field="salesProcess" label="טלפוני" emoji="📞" />
-                    <CheckboxOption field="salesProcess" label="דיגיטלי - דרך האתר" emoji="💻" />
+                    <CheckboxOption field="salesProcess" label="מכירה טלפונית" emoji="📞" />
+                    <CheckboxOption field="salesProcess" label="מכירה דיגיטלית מלאה באתר" emoji="💻" />
                     <CheckboxOption field="salesProcess" label="כנסים ואירועים" emoji="🏢" />
                     <CheckboxOption field="salesProcess" label="וואטסאפ" emoji="📱" />
                     <CheckboxOption field="salesProcess" label="מייל" emoji="📧" />
                   </div>
                 </div>
-
-                <div className="mt-8 space-y-4">
-                  <p className="font-bold text-slate-700">כמה זמן לוקח מרגע קבלת הפנייה עד טיפול?</p>
-                  <div className="grid grid-cols-2 md:grid-cols-4 gap-2">
-                    {[
-                      { label: 'מיידי', icon: '⚡' },
-                      { label: 'תוך 24 שעות', icon: '🕒' },
-                      { label: '1-3 ימים', icon: '📅' },
-                      { label: 'יותר מ-3 ימים', icon: '⏰' }
-                    ].map(item => (
-                      <button key={item.label} onClick={() => handleInputChange('responseTime', item.label)} className={`p-3 rounded-xl border-2 font-bold transition-all text-sm flex flex-col items-center gap-1 ${formData.responseTime === item.label ? 'bg-[#000ab9] text-white border-[#000ab9]' : 'bg-white border-slate-100 text-slate-600'}`}>
-                        <span>{item.icon}</span>
-                        <span>{item.label}</span>
-                      </button>
+                <div className="mt-12 space-y-6">
+                  <p className="font-bold text-slate-700 text-2xl">מהו זמן התגובה הממוצע לליד?</p>
+                  <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                    {['מיידי', 'עד 24 שעות', '1-3 ימים', 'יותר מ-3 ימים'].map(v => (
+                      <button key={v} onClick={() => handleInputChange('responseTime', v)} className={`p-5 rounded-[25px] border-2 font-bold transition-all text-lg shadow-sm ${formData.responseTime === v ? 'bg-[#000ab9] text-white border-[#000ab9] transform scale-105' : 'bg-white border-slate-100 text-slate-600 hover:border-slate-300'}`}>{v}</button>
                     ))}
                   </div>
                 </div>
-
-                <div className="mt-8 space-y-6">
-                  <div className="space-y-3">
-                    <p className="font-bold text-slate-700">האם יש לכם מדדים לתהליכי המכירה/שיווק?</p>
-                    <RadioOption field="hasKpi" label="כן, יש לנו מעקב KPI" value="yes" />
-                    <RadioOption field="hasKpi" label="לא, אין לנו מעקב" value="no" />
-                  </div>
-
-                  <div className="space-y-3">
-                    <p className="font-bold text-slate-700">יש לכם פעולות להגדלת שווי הלקוחות הקיימים?</p>
-                    <RadioOption field="upsellProcess" label="כן, יש לנו תוכניות שדרוג" value="yes" />
-                    <RadioOption field="upsellProcess" label="לא, אין לנו" value="no" />
-                  </div>
-                </div>
-
-                <div className="mt-8 space-y-3">
-                  <p className="font-bold text-slate-700">תארו את התהליך שעוברים לידים שלא סגרו אתכם</p>
-                  <textarea
-                    style={fontStyle}
-                    className="w-full p-4 bg-slate-50 rounded-2xl border-2 border-transparent focus:border-[#7cd6de] outline-none h-32 text-right shadow-inner"
-                    placeholder="איך אתם מתמודדים עם לידים שלא הפכו ללקוחות?"
-                    value={formData.lostLeadsProcess}
-                    onChange={(e) => handleInputChange('lostLeadsProcess', e.target.value)}
-                  />
+                <div className="mt-12 space-y-4">
+                   <p className="font-bold text-slate-700 text-2xl">תארו את התהליך שעוברים לידים שלא סגרו אתכם:</p>
+                   <textarea className="w-full p-6 bg-slate-50 rounded-[30px] border-2 border-transparent focus:border-[#7cd6de] focus:bg-white outline-none h-32 text-right text-xl shadow-inner transition-all" placeholder="..." value={formData.lostLeadsProcess} onChange={(e) => handleInputChange('lostLeadsProcess', e.target.value)} />
                 </div>
               </div>
             )}
 
-            {/* שלב 8 - צרכים וציפיות מהאוטומציה */}
             {currentStep === 8 && (
-              <div className="space-y-6">
-                <div className="text-center mb-8">
-                  <div className="inline-block p-3 bg-blue-100 rounded-full text-[#000ab9] mb-2">
-                    <Bot size={32} />
-                  </div>
-                  <h2 className="text-3xl font-bold text-[#000ab9]">מה הייתם שמחים להפוך לאוטומטי וליצור שקט תפעולי?</h2>
-                  <p className="text-slate-500">בואו נגדיר מה האוטומציה/הבוט צריכים לעשות בשבילכם</p>
-                </div>
-
-                <div className="space-y-4">
-                  <p className="font-bold text-slate-700 text-lg">מהן המטרות העיקריות שלכם מהכנסת אוטומציות לעסק?</p>
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-                    <CheckboxOption field="botGoals" label="מענה 24/7" emoji="🕒" />
-                    <CheckboxOption field="botGoals" label="סינון וכישור לידים" emoji="🎯" />
+              <div className="space-y-10">
+                <div className="text-center mb-10"><h2 className="text-4xl font-black text-[#000ab9]">ציפיות מהאוטומציה</h2></div>
+                <div className="space-y-6">
+                  <p className="font-bold text-slate-700 text-2xl border-r-4 border-[#7cd6de] pr-4">מהן המטרות העיקריות מהכנסת אוטומציה?</p>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <CheckboxOption field="botGoals" label="מענה 24/7 ללקוחות" emoji="🕒" />
+                    <CheckboxOption field="botGoals" label="סינון וכישור לידים אוטומטי" emoji="🎯" />
                     <CheckboxOption field="botGoals" label="מענה לשאלות נפוצות" emoji="❓" />
                     <CheckboxOption field="botGoals" label="תיאום פגישות אוטומטי" emoji="📅" />
                     <CheckboxOption field="botGoals" label="שירות לקוחות בסיסי" emoji="🎧" />
-                    <CheckboxOption field="botGoals" label="איסוף פרטי לידים" emoji="📝" />
-                    <CheckboxOption field="botGoals" label="הקלה על העומס" emoji="⚡" />
-                    <CheckboxOption field="botGoals" label="הכוונה במשפך מכירות" emoji="🔄" />
+                    <CheckboxOption field="botGoals" label="איסוף פרטי לידים חדשים" emoji="📝" />
+                    <CheckboxOption field="botGoals" label="הקלה על העומס של הצוות" emoji="⚡" />
+                    <CheckboxOption field="botGoals" label="הכוונה במשפך המכירות" emoji="🔄" />
                   </div>
                 </div>
-
-                <div className="mt-8 space-y-4">
-                  <p className="font-bold text-slate-700 text-lg">מתי אתם רוצים שהבוט/אוטומציה יהיו זמינים?</p>
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                <div className="mt-12 space-y-6">
+                  <p className="font-bold text-slate-700 text-2xl border-r-4 border-[#7cd6de] pr-4">מתי תרצו שהאוטומציה תהיה פעילה?</p>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <CheckboxOption field="botActiveTime" label="24/7 כל השבוע" emoji="🌍" />
-                    <CheckboxOption field="botActiveTime" label="שעות העבודה בלבד" emoji="🕒" />
-                    <CheckboxOption field="botActiveTime" label="גם בערבים" emoji="🌆" />
+                    <CheckboxOption field="botActiveTime" label="בשעות העבודה בלבד" emoji="🕒" />
+                    <CheckboxOption field="botActiveTime" label="גם בערבים (אחרי שעות העבודה)" emoji="🌆" />
                     <CheckboxOption field="botActiveTime" label="גם בסופי שבוע" emoji="📅" />
                     <CheckboxOption field="botActiveTime" label="ללא שבתות וחגים" emoji="🕯️" />
                   </div>
                 </div>
-
-                <div className="mt-8 space-y-6">
-                  <div className="space-y-3">
-                    <p className="font-bold text-slate-700">יש לכם מידע כתוב קיים שתרצו לשלב? (FAQ/מסמכי שירות)</p>
-                    <RadioOption field="existingContent" label="כן, יש לנו תכנים מוכנים" value="yes" />
-                    <RadioOption field="existingContent" label="לא, נצטרך לבנות מההתחלה" value="no" />
-                  </div>
-
-                  <div className="space-y-3">
-                    <p className="font-bold text-slate-700">יש לכם העדפות עיצוביות או טכנולוגיות?</p>
-                    <textarea
-                      style={fontStyle}
-                      className="w-full p-4 bg-slate-50 rounded-2xl border-2 border-transparent focus:border-[#7cd6de] outline-none h-24 text-right shadow-inner"
-                      placeholder="צבעי מותג, סגנון עיצוב, פלטפורמות מועדפות..."
-                      value={formData.designPreferences}
-                      onChange={(e) => handleInputChange('designPreferences', e.target.value)}
-                    />
-                  </div>
-                </div>
               </div>
             )}
 
-            {/* שלב 9 - דרגת הזדהות עם אתגרים בעסק */}
             {currentStep === 9 && (
-              <div className="space-y-6">
-                <div className="text-center mb-9">
-                  <Star size={40} className="text-yellow-400 mx-auto mb-2 fill-yellow-400" />
-                  <h2 className="text-3xl font-black text-[#000ab9]">דרגת ההזדהות עם אתגרים בעסק</h2>
-                  <p className="text-slate-500 italic">כוכב אחד = כלל לא מזדהה | חמישה כוכבים = מזדהה במידה רבה מאוד</p>
+              <div className="space-y-8">
+                <div className="text-center mb-10">
+                  <div className="bg-yellow-50 w-20 h-20 rounded-full flex items-center justify-center mx-auto mb-4 shadow-sm">
+                    <Star size={45} className="text-yellow-400 fill-yellow-400" />
+                  </div>
+                  <h2 className="text-4xl font-black text-[#000ab9]">דרגת ההזדהות עם אתגרים</h2>
+                  <p className="text-slate-500 text-xl font-bold mt-2">עד כמה המשפטים הבאים מתארים את העסק שלכם?</p>
                 </div>
-
-                <div className="space-y-3">
+                <div className="space-y-4">
                   {[
                     "המזכיר/ה שלי עסוק/ה רוב היום בשאלות חוזרות מלקוחות",
-                    "מתפספסים לי לידים ועסקאות",
-                    "אין לי מספיק מעקב אחרי סטטוס לקוח",
+                    "מתפספסים לי לידים ועסקאות בגלל חוסר מענה מהיר",
+                    "אין לי מספיק מעקב אחרי סטטוס לקוח בתהליך המכירה",
                     "יש אצלי עומס של משימות החוזרות על עצמן ביומיום",
                     "חוסר יכולת להעניק מענה מהיר לשאלות ופניות של לקוחות",
                     "עומס של המשימות הידניות גורם לי לאבד מידע חשוב",
@@ -418,18 +461,18 @@ const SurveyForm = () => {
                     "הלקוחות שלי מתקשים למצוא תשובות לשאלות נפוצות בצורה מהירה",
                     "הלקוחות שלי לא מצליחים להגיע לשירותים שהעסק שלי מציע בגלל חוסר במידע זמין ויעיל"
                   ].map((q) => (
-                    <div key={q} className="flex flex-col md:flex-row md:items-center justify-between p-4 bg-slate-50 rounded-2xl gap-4 border border-transparent hover:border-slate-200 transition-all">
-                      <span className="font-bold text-slate-700 flex-1 text-sm md:text-base leading-tight">{q}</span>
-                      <div className="flex gap-1 justify-center bg-white p-2 rounded-xl shadow-sm">
+                    <div key={q} className="flex flex-col md:flex-row md:items-center justify-between p-6 bg-slate-50 rounded-[25px] gap-6 border border-transparent hover:border-slate-200 hover:bg-white transition-all shadow-sm">
+                      <span className="font-bold text-slate-700 flex-1 text-lg leading-tight">{q}</span>
+                      <div className="flex gap-2 justify-center bg-white p-3 rounded-2xl shadow-inner border border-slate-100">
                         {[1, 2, 3, 4, 5].map((star) => (
-                          <button
-                            key={star}
-                            onClick={() => handleStarRating(q, star)}
-                            className="focus:outline-none transform active:scale-90 transition-transform"
+                          <button 
+                            key={star} 
+                            onClick={() => handleStarRating(q, star)} 
+                            className="focus:outline-none transform active:scale-90 transition-all duration-200"
                           >
-                            <Star
-                              size={24}
-                              className={`transition-colors ${formData.starRatings[q] >= star ? 'text-yellow-400 fill-yellow-400' : 'text-slate-200'}`}
+                            <Star 
+                              size={32} 
+                              className={`transition-colors ${formData.starRatings[q] >= star ? 'text-yellow-400 fill-yellow-400' : 'text-slate-200 hover:text-yellow-200'}`} 
                             />
                           </button>
                         ))}
@@ -437,136 +480,117 @@ const SurveyForm = () => {
                     </div>
                   ))}
                 </div>
-
-                <div className="mt-8 bg-blue-50 p-4 rounded-2xl border-r-4 border-[#000ab9] flex items-start gap-3">
-                  <span className="text-xl">💡</span>
-                  <p className="text-[#000ab9] font-bold text-sm">
-                    <span className="underline">טיפ:</span> הדירוגים שלכם יעזרו לנו להתמקד בפתרונות שיביאו לכם את התוצאות הכי משמעותיות.
-                  </p>
-                </div>
               </div>
             )}
 
-            {/* שלב 10 - פיננסי ודיגיטל */}
             {currentStep === 10 && (
               <div className="space-y-12">
                 <div className="text-center">
-                  <div className="inline-block p-4 bg-blue-50 rounded-2xl text-[#000ab9] mb-4"><BarChart3 size={40} /></div>
-                  <h2 className="text-3xl font-bold text-[#000ab9]">מצב פיננסי ודיגיטלי</h2>
+                  <BarChart3 size={50} className="text-[#000ab9] mx-auto mb-4" />
+                  <h2 className="text-4xl font-black text-[#000ab9]">מצב פיננסי ודיגיטלי</h2>
                 </div>
-                
-                <div className="space-y-4">
-                   <p className="font-bold text-slate-700">מהו טווח ההכנסה החודשי של העסק?</p>
-                   <select style={fontStyle} className="w-full p-4 bg-slate-50 rounded-2xl border-2 border-transparent focus:border-[#7cd6de] outline-none text-right font-bold text-lg shadow-inner" value={formData.revenue} onChange={(e) => handleInputChange('revenue', e.target.value)}>
+                <div className="space-y-6">
+                   <p className="font-bold text-slate-700 text-2xl pr-4 border-r-4 border-[#000ab9]">מהו טווח ההכנסה החודשי הממוצע של העסק?</p>
+                   <select 
+                    className="w-full p-6 bg-slate-50 rounded-[30px] border-2 border-transparent focus:border-[#7cd6de] focus:bg-white outline-none text-right font-bold text-xl shadow-inner appearance-none cursor-pointer" 
+                    value={formData.revenue} 
+                    onChange={(e) => handleInputChange('revenue', e.target.value)}
+                   >
                     <option value="">בחרו טווח הכנסה</option>
                     <option value="0-30k">0 - 30,000 ₪</option>
                     <option value="30-100k">30,000 - 100,000 ₪</option>
                     <option value="100k+">מעל 100,000 ₪</option>
                   </select>
                 </div>
-
-                <div className="space-y-4">
-                  <p className="font-bold text-slate-700">נוכחות דיגיטלית (קישור לאתר או עמוד עסקי):</p>
-                  <input type="text" style={fontStyle} placeholder="https://..." className="w-full p-4 bg-slate-50 rounded-2xl border-2 border-transparent focus:border-[#7cd6de] outline-none text-left shadow-inner" dir="ltr" value={formData.digitalPresence} onChange={(e) => handleInputChange('digitalPresence', e.target.value)} />
+                <div className="space-y-6">
+                  <p className="font-bold text-slate-700 text-2xl pr-4 border-r-4 border-[#000ab9]">נוכחות דיגיטלית (קישור לאתר או עמוד עסקי):</p>
+                  <input type="text" placeholder="https://..." className="w-full p-6 bg-slate-50 rounded-[30px] border-2 border-transparent focus:border-[#7cd6de] focus:bg-white outline-none text-left shadow-inner font-mono text-xl" dir="ltr" value={formData.digitalPresence} onChange={(e) => handleInputChange('digitalPresence', e.target.value)} />
                 </div>
               </div>
             )}
 
-            {/* שלב 11 - ניסיון קודם */}
             {currentStep === 11 && (
-              <div className="space-y-6">
+              <div className="space-y-10">
                 <div className="text-center mb-8">
-                  <div className="inline-block p-3 bg-blue-100 rounded-full text-[#000ab9] mb-2">
-                    <Sparkles size={32} />
+                  <Sparkles size={50} className="text-[#000ab9] mx-auto mb-4" />
+                  <h2 className="text-4xl font-black text-[#000ab9]">חוויית משתמש וניסיון קודם</h2>
+                </div>
+                <div className="space-y-6 text-right mb-10">
+                  <p className="font-bold text-slate-700 text-2xl border-r-4 border-[#000ab9] pr-4">האם יש לכם ניסיון קודם עם בוטים או מערכות אוטומטיות?</p>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <RadioOption field="priorExperience" label="כן, יש לנו ניסיון קודם" value="yes" />
+                    <RadioOption field="priorExperience" label="לא, זה יהיה הבוט הראשון שלנו" value="no" />
                   </div>
-                  <h2 className="text-3xl font-bold text-[#000ab9]">ניסיון קודם</h2>
                 </div>
-
-                <div className="space-y-4">
-                  <p className="font-bold text-slate-700">יש לכם ניסיון קודם עם בוטים או מערכות אוטומטיות?</p>
-                  <RadioOption field="priorExperience" label="כן, יש לנו ניסיון" value="yes" />
-                  <RadioOption field="priorExperience" label="לא, זה יהיה הראשון" value="no" />
-                </div>
-
-                <div className="mt-8 space-y-3">
-                  <p className="font-bold text-slate-700">איזה סוג של חוויית משתמש הייתם רוצים לספק בבוט?</p>
-                  <textarea
-                    style={fontStyle}
-                    className="w-full p-4 bg-slate-50 rounded-2xl border-2 border-transparent focus:border-[#7cd6de] outline-none h-32 text-right shadow-inner"
-                    placeholder="איך אתם רוצים שהלקוחות ירגישו?"
-                    value={formData.userExperienceGoal}
-                    onChange={(e) => handleInputChange('userExperienceGoal', e.target.value)}
-                  />
-                </div>
-
-                <div className="mt-8 bg-blue-50 p-6 rounded-2xl border border-blue-100">
-                  <h3 className="text-[#000ab9] font-bold text-lg mb-2 flex items-center gap-2">🥳 כמעט סיימנו!</h3>
-                  <p className="text-blue-800 text-sm leading-relaxed">אתם עומדים לסיים את השאלון. בצעד הבא תוכלו לסקור את המידע ולשלוח אותו.</p>
+                <div className="space-y-6">
+                  <p className="font-bold text-slate-700 text-2xl border-r-4 border-[#000ab9] pr-4">איזה סוג של חוויית משתמש הייתם רוצים לספק בבוט שלכם?</p>
+                  <textarea className="w-full p-8 bg-slate-50 rounded-[40px] border-2 border-transparent focus:border-[#7cd6de] focus:bg-white outline-none h-48 text-right text-xl shadow-inner transition-all" placeholder="לדוגמה: יחס אישי, מענה מהיר, מקצועיות, הומור וכו'..." value={formData.userExperienceGoal} onChange={(e) => handleInputChange('userExperienceGoal', e.target.value)} />
                 </div>
               </div>
             )}
 
-            {/* שלב 12 - סיכום ושליחה */}
             {currentStep === 12 && (
-              <div className="space-y-6">
-                <div className="text-center mb-8">
-                  <h2 className="text-3xl font-bold text-[#000ab9]">סיכום ושליחה</h2>
-                  <p className="text-slate-500">בדקו את הפרטים ושלחו את השאלון</p>
+              <div className="space-y-10">
+                <div className="text-center mb-10">
+                  <CheckCircle2 size={60} className="text-[#000ab9] mx-auto mb-4" />
+                  <h2 className="text-4xl font-black text-[#000ab9]">סיכום ושליחה</h2>
+                  <p className="text-slate-500 text-xl font-bold mt-2 italic">כל המידע נאסף. אנחנו מוכנים לאבחן את העסק שלך!</p>
                 </div>
-
-                <div className="bg-slate-50 p-8 rounded-3xl border border-slate-100 shadow-sm">
-                  <h3 className="text-xl font-bold text-slate-800 mb-6 border-b pb-2">פרטי התקשרות:</h3>
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-y-6 gap-x-12">
-                    <div className="flex justify-between border-b border-slate-200 pb-1">
-                      <span className="font-bold text-slate-700">עסק:</span>
-                      <span className="text-slate-600">{formData.businessName || "לא צוין"}</span>
+                <div className="bg-gradient-to-br from-slate-50 to-white p-10 rounded-[40px] border-2 border-slate-100 shadow-xl relative overflow-hidden">
+                  <div className="absolute top-0 left-0 w-2 h-full bg-[#000ab9]" />
+                  <h3 className="text-2xl font-black text-slate-800 mb-8 border-b pb-4">תקציר פרטים:</h3>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-y-8 gap-x-12">
+                    <div className="flex justify-between items-center border-b border-slate-100 pb-2">
+                      <span className="font-black text-slate-500">עסק:</span>
+                      <span className="text-xl font-bold text-[#000ab9]">{formData.businessName || "לא צוין"}</span>
                     </div>
-                    <div className="flex justify-between border-b border-slate-200 pb-1">
-                      <span className="font-bold text-slate-700">איש קשר:</span>
-                      <span className="text-slate-600">{formData.contactName || "לא צוין"}</span>
+                    <div className="flex justify-between items-center border-b border-slate-100 pb-2">
+                      <span className="font-black text-slate-500">איש קשר:</span>
+                      <span className="text-xl font-bold text-[#000ab9]">{formData.contactName || "לא צוין"}</span>
                     </div>
-                    <div className="flex justify-between border-b border-slate-200 pb-1">
-                      <span className="font-bold text-slate-700">מייל:</span>
-                      <span className="text-slate-600 font-mono text-sm">{formData.email}</span>
+                    <div className="flex justify-between items-center border-b border-slate-100 pb-2">
+                      <span className="font-black text-slate-500">מייל:</span>
+                      <span className="text-xl font-bold text-[#000ab9] font-mono">{formData.email}</span>
                     </div>
-                    <div className="flex justify-between border-b border-slate-200 pb-1">
-                      <span className="font-bold text-slate-700">טלפון:</span>
-                      <span className="text-slate-600">{formData.phone || "לא צוין"}</span>
-                    </div>
-                    <div className="flex justify-between border-b border-slate-200 pb-1">
-                      <span className="font-bold text-slate-700">תחום:</span>
-                      <span className="text-slate-600">{formData.businessSector || "לא צוין"}</span>
+                    <div className="flex justify-between items-center border-b border-slate-100 pb-2">
+                      <span className="font-black text-slate-500">טלפון:</span>
+                      <span className="text-xl font-bold text-[#000ab9]">{formData.phone || "לא צוין"}</span>
                     </div>
                   </div>
-                </div>
-
-                <div className="mt-8 bg-blue-50 p-6 rounded-2xl border border-blue-100">
-                  <h3 className="text-[#000ab9] font-bold text-lg mb-4 flex items-center gap-2">🚀 מה קורה הלאה?</h3>
-                  <ul className="space-y-3">
-                    <li className="flex items-center gap-3 text-blue-900"><Check size={16} /><span>נסקור את המידע ונתאים פתרון</span></li>
-                    <li className="flex items-center gap-3 text-blue-900"><Check size={16} /><span>נכין הצעה להגדלת תוצאות</span></li>
-                  </ul>
                 </div>
               </div>
             )}
           </div>
 
-          {/* Navigation Buttons */}
-          <div className="flex gap-4 mt-12">
+          <div className="flex gap-6 mt-16 relative z-10">
             {currentStep > 0 && (
-              <button onClick={prevStep} className="flex-1 py-5 rounded-3xl font-bold text-slate-500 bg-slate-100 hover:bg-slate-200 transition-all flex items-center justify-center gap-2 text-xl">
-                <ArrowRight size={24} /> חזרה
+              <button 
+                onClick={prevStep} 
+                className="flex-1 py-6 rounded-[30px] font-black text-slate-500 bg-slate-100 hover:bg-slate-200 hover:scale-[1.02] active:scale-95 transition-all flex items-center justify-center gap-3 text-2xl shadow-lg border-b-4 border-slate-300"
+              >
+                <ArrowRight size={30} /> חזרה
               </button>
             )}
             <button 
-              onClick={nextStep} 
+              onClick={currentStep === totalSteps ? handleSubmit : nextStep} 
               disabled={isSubmitting}
-              className={`flex-[2] py-5 rounded-3xl font-black transition-all flex items-center justify-center gap-2 text-xl shadow-xl ${isSubmitting ? 'bg-slate-400' : 'bg-gradient-to-r from-[#000ab9] to-[#000ab9] hover:scale-[1.02] active:scale-95 text-white'}`}
+              className={`flex-[2] py-6 rounded-[30px] font-black transition-all flex items-center justify-center gap-3 text-2xl shadow-2xl border-b-4 ${
+                isSubmitting 
+                  ? 'bg-slate-400 border-slate-500 cursor-not-allowed' 
+                  : 'bg-[#000ab9] hover:bg-blue-800 hover:scale-[1.03] active:scale-95 text-white border-blue-900'
+              }`}
             >
-              {isSubmitting ? <Loader2 className="animate-spin" /> : (currentStep === totalSteps ? 'שלח אבחון עכשיו 🚀' : 'המשך לשלב הבא')}
-              {currentStep < totalSteps && <ArrowLeft size={24} />}
+              {isSubmitting ? (
+                <><Loader2 className="animate-spin" size={30} /> שולח אבחון...</>
+              ) : (
+                <>
+                  {currentStep === totalSteps ? 'שלח אבחון עכשיו 🚀' : 'המשך לשלב הבא'}
+                  {currentStep < totalSteps && <ArrowLeft size={30} />}
+                </>
+              )}
             </button>
           </div>
+          {error && <p className="text-red-500 text-center font-black mt-6 text-xl animate-pulse">{error}</p>}
         </div>
       </div>
     </div>
