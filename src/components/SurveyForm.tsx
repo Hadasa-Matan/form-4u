@@ -8,7 +8,7 @@ import {
 const SurveyForm = () => {
   const [formData, setFormData] = useState({
     contactName: '', email: '', businessName: '', businessField: '',
-    challenges: [], timeWasters: [], goals: [], // שדות לבחירה מרובה
+    challenges: [], timeWasters: [], goals: [], 
     revenue: '', mainChallenge: '', digitalPresence: ''
   });
   const [currentStep, setCurrentStep] = useState(0);
@@ -23,7 +23,6 @@ const SurveyForm = () => {
     setError('');
   };
 
-  // פונקציה לניהול בחירה מרובה (Checkboxes)
   const handleCheckboxChange = (field: string, option: string) => {
     setFormData(prev => {
       const currentOptions = prev[field] || [];
@@ -113,7 +112,7 @@ const SurveyForm = () => {
           </div>
         )}
 
-        <div className="bg-white rounded-[40px] shadow-2xl p-8 md:p-16 border-b-[12px] border-[#000ab9] min-h-[550px] flex flex-col justify-between">
+        <div className="bg-white rounded-[40px] shadow-2xl p-8 md:p-16 border-b-[12px] border-[#000ab9] min-h-[650px] flex flex-col justify-between">
           <div className="animate-in fade-in slide-in-from-bottom-4 duration-500">
             
             {currentStep === 0 && (
@@ -122,7 +121,7 @@ const SurveyForm = () => {
                 <h2 className="text-2xl font-bold">היי 😄</h2>
                 <p className="text-xl">אנחנו יודעים שאתם עמוסים – אולי בין לקוח לשיחה 📞, אולי רגע לפני הפסקת קפה ☕,</p>
                 <p className="text-xl font-bold text-[#000ab9]">אבל אם הגעתם לפה – כנראה שאתם רוצים להפוך את העסק שלכם לחכם, יעיל וחסכוני יותר 🧠</p>
-                <div className="bg-slate-50 p-6 rounded-3xl border-r-4 border-[#7cd6de] font-bold">📋 השאלון לוקח כמה דקות בלבד ומאפשר לנו להגיע לשיחה מוכנים 🎯</div>
+                <div className="bg-slate-50 p-6 rounded-3xl border-r-4 border-[#7cd6de] font-bold italic">📋 השאלון לוקח כמה דקות בלבד ומאפשר לנו להגיע לשיחה מוכנים 🎯</div>
                 <p className="text-center text-[#000ab9] font-black animate-bounce text-2xl pt-6">מוכנים להתחיל? מכאן 👇</p>
               </div>
             )}
@@ -146,41 +145,47 @@ const SurveyForm = () => {
                   <CheckboxOption field="challenges" label="שירות לקוחות איטי" emoji="🎯" />
                   <CheckboxOption field="challenges" label="מעקב אחר לידים" emoji="📞" />
                   <CheckboxOption field="challenges" label="משימות חוזרות" emoji="🔄" />
+                  <CheckboxOption field="challenges" label="זמינות 24/7" emoji="🕙" />
+                  <CheckboxOption field="challenges" label="קושי בהגדלת העסק" emoji="📈" />
                 </div>
               </div>
             )}
 
             {currentStep === 3 && (
               <div className="space-y-8">
-                <div className="text-center"><h2 className="text-3xl font-bold text-[#000ab9]">מהם גוזלי הזמן המרכזיים?</h2></div>
+                <div className="text-center"><h2 className="text-3xl font-bold text-[#000ab9]">מהם גוזלי הזמן המרכזיים שלכם?</h2></div>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <CheckboxOption field="timeWasters" label="שיחות טלפון חוזרות" emoji="📞" />
                   <CheckboxOption field="timeWasters" label="מענה למיילים" emoji="📧" />
                   <CheckboxOption field="timeWasters" label="תיאום פגישות" emoji="📅" />
                   <CheckboxOption field="timeWasters" label="הזנת נתונים" emoji="⌨️" />
+                  <CheckboxOption field="timeWasters" label="שאלות בסיסיות" emoji="❓" />
+                  <CheckboxOption field="timeWasters" label="מעקבים ותזכורות" emoji="👥" />
                 </div>
               </div>
             )}
 
             {currentStep === 4 && (
               <div className="space-y-8">
-                <div className="text-center"><h2 className="text-3xl font-bold text-[#000ab9]">מה המטרה המרכזית שלכם?</h2></div>
+                <div className="text-center"><h2 className="text-3xl font-bold text-[#000ab9]">מה המטרה המרכזית בתהליך איסוף לידים?</h2></div>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <CheckboxOption field="goals" label="לא לפספס לידים" emoji="🎯" />
                   <CheckboxOption field="goals" label="להגדיל מכירות" emoji="💰" />
                   <CheckboxOption field="goals" label="אוטומציה מלאה" emoji="🤖" />
                   <CheckboxOption field="goals" label="יותר זמן למשפחה" emoji="👨‍👩‍👧‍👦" />
+                  <CheckboxOption field="goals" label="לשפר חוויית לקוח" emoji="✨" />
+                  <CheckboxOption field="goals" label="סינון לידים איכותיים" emoji="🔍" />
                 </div>
               </div>
             )}
 
-            {/* המשך שאר השלבים עד 9 (פיננסי, אתגר, דיגיטל, סיום) */}
             {currentStep === 5 && (
               <div className="space-y-8 text-center">
                 <div className="inline-block p-4 bg-blue-50 rounded-2xl text-[#000ab9] mb-4"><BarChart3 size={40} /></div>
                 <h2 className="text-3xl font-bold text-[#000ab9]">מצב פיננסי</h2>
+                <p className="text-slate-500 italic">טווח הכנסה חודשי ממוצע בעסק</p>
                 <select className="w-full p-4 bg-slate-50 rounded-2xl border-2 border-transparent focus:border-[#7cd6de] outline-none text-right" onChange={(e)=>handleInputChange('revenue', e.target.value)}>
-                  <option value="">בחרו טווח הכנסה חודשי</option>
+                  <option value="">בחרו טווח הכנסה</option>
                   <option value="0-30k">0 - 30,000 ₪</option>
                   <option value="30-100k">30,000 - 100,000 ₪</option>
                   <option value="100k+">מעל 100,000 ₪</option>
@@ -188,14 +193,21 @@ const SurveyForm = () => {
               </div>
             )}
 
+            {currentStep === 8 && (
+              <div className="space-y-8 text-center">
+                <div className="inline-block p-4 bg-blue-50 rounded-2xl text-[#000ab9] mb-4"><Globe size={40} /></div>
+                <h2 className="text-3xl font-bold text-[#000ab9]">נוכחות דיגיטלית</h2>
+                <input type="text" placeholder="קישור לאתר או לעמוד העסקי" className="w-full p-4 bg-slate-50 rounded-2xl border-2 border-transparent focus:border-[#7cd6de] outline-none text-left" dir="ltr" onChange={(e)=>handleInputChange('digitalPresence', e.target.value)} />
+              </div>
+            )}
+
             {currentStep === 9 && (
               <div className="space-y-8 text-center">
                 <div className="inline-block p-8 bg-green-50 rounded-full text-[#52de4a] mb-4 animate-bounce"><CheckCircle2 size={64} /></div>
                 <h2 className="text-3xl font-bold text-[#000ab9]">מוכנים לשלוח!</h2>
-                <p className="text-xl text-slate-600 px-4">לחצו על הכפתור למטה כדי לשלוח את הפרטים.</p>
+                <p className="text-xl text-slate-600 font-medium px-4">תודה על השיתוף. לחצו למטה כדי שנבנה לכם את הפתרון המושלם.</p>
               </div>
             )}
-
           </div>
 
           <div className="mt-12 flex justify-between items-center border-t pt-8">
