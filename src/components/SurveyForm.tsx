@@ -9,7 +9,7 @@ const SurveyForm = () => {
   const [formData, setFormData] = useState({
     contactName: '', email: '', businessName: '', businessField: '',
     challenges: [], timeWasters: [], goals: [], 
-    revenue: '', mainChallenge: '', digitalPresence: ''
+    successMetric: '', businessOperation: '', revenue: '', digitalPresence: ''
   });
   const [currentStep, setCurrentStep] = useState(0);
   const [error, setError] = useState('');
@@ -49,6 +49,8 @@ const SurveyForm = () => {
           challenges: formData.challenges.join(', '),
           time_wasters: formData.timeWasters.join(', '),
           goals: formData.goals.join(', '),
+          success_metric: formData.successMetric,
+          business_operation: formData.businessOperation,
           revenue: formData.revenue,
           digital_presence: formData.digitalPresence
         },
@@ -90,7 +92,7 @@ const SurveyForm = () => {
         <div className="bg-white p-12 rounded-[40px] shadow-2xl text-center max-w-lg w-full border-t-8 border-[#52de4a]">
           <CheckCircle2 size={80} className="text-[#52de4a] mx-auto mb-6" />
           <h2 className="text-3xl font-bold text-[#000ab9] mb-4">תודה רבה!</h2>
-          <p className="text-slate-600 text-lg">האבחון נשלח אלינו בהצלחה.</p>
+          <p className="text-slate-600 text-lg">האבחון נשלח אלינו בהצלחה, ניצור קשר בהקדם.</p>
         </div>
       </div>
     );
@@ -103,7 +105,7 @@ const SurveyForm = () => {
         {currentStep > 0 && (
           <div className="mb-10 px-4">
             <div className="flex justify-between items-end mb-4 font-bold text-[#000ab9]">
-              <span className="text-xl font-black">הדסה מתן | אבחון עסק חכם</span>
+              <span className="text-xl font-black italic">הדסה מתן | אבחון עסק חכם</span>
               <span className="text-sm bg-blue-100 px-3 py-1 rounded-full">שלב {currentStep} מתוך {totalSteps}</span>
             </div>
             <div className="h-3 w-full bg-white rounded-full shadow-inner border border-slate-100 overflow-hidden p-0.5">
@@ -112,16 +114,16 @@ const SurveyForm = () => {
           </div>
         )}
 
-        <div className="bg-white rounded-[40px] shadow-2xl p-8 md:p-16 border-b-[12px] border-[#000ab9] min-h-[650px] flex flex-col justify-between">
+        <div className="bg-white rounded-[40px] shadow-2xl p-8 md:p-16 border-b-[12px] border-[#000ab9] min-h-[600px] flex flex-col justify-between">
           <div className="animate-in fade-in slide-in-from-bottom-4 duration-500">
             
             {currentStep === 0 && (
               <div className="space-y-6 text-right leading-relaxed text-slate-700">
                 <div className="text-center mb-8"><Zap size={48} className="text-[#000ab9] mx-auto animate-pulse" /><h1 className="text-4xl font-black text-[#000ab9] mt-4">שאלון לאבחון העסק 🤖</h1></div>
                 <h2 className="text-2xl font-bold">היי 😄</h2>
-                <p className="text-xl">אנחנו יודעים שאתם עמוסים – אולי בין לקוח לשיחה 📞, אולי רגע לפני הפסקת קפה ☕,</p>
+                <p className="text-xl italic font-medium">אנחנו יודעים שאתם עמוסים – אולי בין לקוח לשיחה 📞, אולי רגע לפני הפסקת קפה ☕,</p>
                 <p className="text-xl font-bold text-[#000ab9]">אבל אם הגעתם לפה – כנראה שאתם רוצים להפוך את העסק שלכם לחכם, יעיל וחסכוני יותר 🧠</p>
-                <div className="bg-slate-50 p-6 rounded-3xl border-r-4 border-[#7cd6de] font-bold italic">📋 השאלון לוקח כמה דקות בלבד ומאפשר לנו להגיע לשיחה מוכנים 🎯</div>
+                <div className="bg-slate-50 p-6 rounded-3xl border-r-4 border-[#7cd6de] font-bold">📋 השאלון לוקח כמה דקות בלבד ומאפשר לנו להגיע לשיחה מוכנים 🎯</div>
                 <p className="text-center text-[#000ab9] font-black animate-bounce text-2xl pt-6">מוכנים להתחיל? מכאן 👇</p>
               </div>
             )}
@@ -138,7 +140,7 @@ const SurveyForm = () => {
             )}
 
             {currentStep === 2 && (
-              <div className="space-y-8">
+              <div className="space-y-6">
                 <div className="text-center"><h2 className="text-3xl font-bold text-[#000ab9]">מה מפריע לכם היום בעסק?</h2><p className="text-slate-500 italic">(ניתן לבחור מספר אפשרויות)</p></div>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <CheckboxOption field="challenges" label="ניהול זמן לא יעיל" emoji="⏰" />
@@ -152,8 +154,8 @@ const SurveyForm = () => {
             )}
 
             {currentStep === 3 && (
-              <div className="space-y-8">
-                <div className="text-center"><h2 className="text-3xl font-bold text-[#000ab9]">מהם גוזלי הזמן המרכזיים שלכם?</h2></div>
+              <div className="space-y-6">
+                <div className="text-center"><h2 className="text-3xl font-bold text-[#000ab9]">מהם גוזלי הזמן המרכזיים?</h2></div>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <CheckboxOption field="timeWasters" label="שיחות טלפון חוזרות" emoji="📞" />
                   <CheckboxOption field="timeWasters" label="מענה למיילים" emoji="📧" />
@@ -166,8 +168,8 @@ const SurveyForm = () => {
             )}
 
             {currentStep === 4 && (
-              <div className="space-y-8">
-                <div className="text-center"><h2 className="text-3xl font-bold text-[#000ab9]">מה המטרה המרכזית בתהליך איסוף לידים?</h2></div>
+              <div className="space-y-6">
+                <div className="text-center"><h2 className="text-3xl font-bold text-[#000ab9]">מה המטרה המרכזית שלכם?</h2></div>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <CheckboxOption field="goals" label="לא לפספס לידים" emoji="🎯" />
                   <CheckboxOption field="goals" label="להגדיל מכירות" emoji="💰" />
@@ -181,11 +183,28 @@ const SurveyForm = () => {
 
             {currentStep === 5 && (
               <div className="space-y-8 text-center">
+                <div className="inline-block p-4 bg-blue-50 rounded-2xl text-[#000ab9] mb-4"><Target size={40} /></div>
+                <h2 className="text-3xl font-bold text-[#000ab9]">מה ייחשב הצלחה עבורכם?</h2>
+                <p className="text-slate-500 italic">שתפו אותנו ביעד מדיד (לדוגמה: הגדלת אחוז המרה ב-10%)</p>
+                <textarea className="w-full p-4 bg-slate-50 rounded-2xl border-2 border-transparent focus:border-[#7cd6de] outline-none h-40 resize-none text-right shadow-inner" placeholder="הקלידו כאן..." value={formData.successMetric} onChange={(e)=>handleInputChange('successMetric', e.target.value)} />
+              </div>
+            )}
+
+            {currentStep === 6 && (
+              <div className="space-y-8 text-center">
+                <div className="inline-block p-4 bg-blue-50 rounded-2xl text-[#000ab9] mb-4"><MessageSquare size={40} /></div>
+                <h2 className="text-3xl font-bold text-[#000ab9]">איך העסק פועל היום?</h2>
+                <p className="text-slate-500 italic">איך אתם מנהלים פניות ולקוחות כרגע?</p>
+                <textarea className="w-full p-4 bg-slate-50 rounded-2xl border-2 border-transparent focus:border-[#7cd6de] outline-none h-40 resize-none text-right shadow-inner" placeholder="למשל: אקסל, מחברת, וואטסאפ..." value={formData.businessOperation} onChange={(e)=>handleInputChange('businessOperation', e.target.value)} />
+              </div>
+            )}
+
+            {currentStep === 7 && (
+              <div className="space-y-8 text-center">
                 <div className="inline-block p-4 bg-blue-50 rounded-2xl text-[#000ab9] mb-4"><BarChart3 size={40} /></div>
                 <h2 className="text-3xl font-bold text-[#000ab9]">מצב פיננסי</h2>
-                <p className="text-slate-500 italic">טווח הכנסה חודשי ממוצע בעסק</p>
-                <select className="w-full p-4 bg-slate-50 rounded-2xl border-2 border-transparent focus:border-[#7cd6de] outline-none text-right" onChange={(e)=>handleInputChange('revenue', e.target.value)}>
-                  <option value="">בחרו טווח הכנסה</option>
+                <select className="w-full p-4 bg-slate-50 rounded-2xl border-2 border-transparent focus:border-[#7cd6de] outline-none text-right font-bold" value={formData.revenue} onChange={(e)=>handleInputChange('revenue', e.target.value)}>
+                  <option value="">בחרו טווח הכנסה חודשי</option>
                   <option value="0-30k">0 - 30,000 ₪</option>
                   <option value="30-100k">30,000 - 100,000 ₪</option>
                   <option value="100k+">מעל 100,000 ₪</option>
@@ -197,22 +216,23 @@ const SurveyForm = () => {
               <div className="space-y-8 text-center">
                 <div className="inline-block p-4 bg-blue-50 rounded-2xl text-[#000ab9] mb-4"><Globe size={40} /></div>
                 <h2 className="text-3xl font-bold text-[#000ab9]">נוכחות דיגיטלית</h2>
-                <input type="text" placeholder="קישור לאתר או לעמוד העסקי" className="w-full p-4 bg-slate-50 rounded-2xl border-2 border-transparent focus:border-[#7cd6de] outline-none text-left" dir="ltr" onChange={(e)=>handleInputChange('digitalPresence', e.target.value)} />
+                <p className="text-slate-500 mb-4 italic">צרפו קישור לאתר או לעמוד עסקי (אם יש)</p>
+                <input type="text" placeholder="https://..." className="w-full p-4 bg-slate-50 rounded-2xl border-2 border-transparent focus:border-[#7cd6de] outline-none text-left" dir="ltr" value={formData.digitalPresence} onChange={(e)=>handleInputChange('digitalPresence', e.target.value)} />
               </div>
             )}
 
             {currentStep === 9 && (
               <div className="space-y-8 text-center">
                 <div className="inline-block p-8 bg-green-50 rounded-full text-[#52de4a] mb-4 animate-bounce"><CheckCircle2 size={64} /></div>
-                <h2 className="text-3xl font-bold text-[#000ab9]">מוכנים לשלוח!</h2>
-                <p className="text-xl text-slate-600 font-medium px-4">תודה על השיתוף. לחצו למטה כדי שנבנה לכם את הפתרון המושלם.</p>
+                <h2 className="text-3xl font-bold text-[#000ab9]">זהו, אנחנו מוכנים!</h2>
+                <p className="text-xl text-slate-600 font-medium">האבחון המקצועי שלך כמעט בדרך. לחצו על הכפתור כדי לשלוח אלינו את כל הפרטים.</p>
               </div>
             )}
           </div>
 
           <div className="mt-12 flex justify-between items-center border-t pt-8">
-            <button onClick={prevStep} disabled={isSubmitting} className={`flex items-center gap-2 text-slate-400 font-bold hover:text-[#000ab9] ${currentStep === 0 || isSubmitting ? 'invisible' : ''}`}><ArrowRight size={20} /> חזרה</button>
-            <button onClick={nextStep} disabled={isSubmitting} className={`px-10 py-4 rounded-full font-bold text-xl text-white shadow-xl flex items-center gap-2 ${currentStep === totalSteps ? 'bg-[#52de4a]' : 'bg-[#000ab9]'}`}>
+            <button onClick={prevStep} disabled={isSubmitting} className={`flex items-center gap-2 text-slate-400 font-bold hover:text-[#000ab9] transition-colors ${currentStep === 0 || isSubmitting ? 'invisible' : ''}`}><ArrowRight size={20} /> חזרה</button>
+            <button onClick={nextStep} disabled={isSubmitting} className={`px-10 py-4 rounded-full font-bold text-xl text-white shadow-xl flex items-center gap-2 transition-all ${currentStep === totalSteps ? 'bg-[#52de4a] hover:bg-[#45c33d]' : 'bg-[#000ab9] hover:bg-[#000890]'}`}>
               {isSubmitting ? <><Loader2 size={20} className="animate-spin" /> שולח...</> : <>{currentStep === 0 ? 'בואו נתחיל!' : currentStep === totalSteps ? 'שלח/י אבחון' : 'קדימה ממשיכים'} <ArrowLeft size={20} /></>}
             </button>
           </div>
