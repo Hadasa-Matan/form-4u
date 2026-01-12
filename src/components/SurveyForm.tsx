@@ -1,12 +1,28 @@
 import React, { useState, useEffect } from 'react';
 import emailjs from '@emailjs/browser';
 import {
-  ArrowRight, ArrowLeft, Building, Target, MessageSquare,
-  Globe, CheckCircle2, Loader2, Zap, Star, Layout, MousePointer2, Bot, BarChart3, Users, Sparkles, Check
+  ArrowRight, ArrowLeft, Building, Target,
+  CheckCircle2, Loader2, Zap, Star, BarChart3, Sparkles, Check
 } from 'lucide-react';
 
 const SurveyForm = () => {
   const fontStyle = { fontFamily: '"FbAsparagos", sans-serif' };
+
+  // ✅ מומלץ להעביר ל-ENV. בינתיים השארתי FALLBACK לערכים שלך.
+  const EMAILJS_SERVICE_ID =
+    (typeof import.meta !== 'undefined' && import.meta.env?.VITE_EMAILJS_SERVICE_ID) ||
+    (typeof process !== 'undefined' && process.env?.REACT_APP_EMAILJS_SERVICE_ID) ||
+    'service_04u46mc';
+
+  const EMAILJS_TEMPLATE_ID =
+    (typeof import.meta !== 'undefined' && import.meta.env?.VITE_EMAILJS_TEMPLATE_ID) ||
+    (typeof process !== 'undefined' && process.env?.REACT_APP_EMAILJS_TEMPLATE_ID) ||
+    'template_44cshno';
+
+  const EMAILJS_PUBLIC_KEY =
+    (typeof import.meta !== 'undefined' && import.meta.env?.VITE_EMAILJS_PUBLIC_KEY) ||
+    (typeof process !== 'undefined' && process.env?.REACT_APP_EMAILJS_PUBLIC_KEY) ||
+    '0MvQ0-Daq0m7nbe2D';
 
   const [formData, setFormData] = useState({
     contactName: '',
@@ -48,9 +64,17 @@ const SurveyForm = () => {
 
   const totalSteps = 12;
 
-  // ✅ FIX 1: init EmailJS פעם אחת
+  // ✅ EmailJS init פעם אחת (לא חובה אם שולחים עם publicKey בפרמטר 4, אבל זה יציב)
   useEffect(() => {
-    emailjs.init({ publicKey: '0MvQ0-Daq0m7nbe2D' });
+    try {
+      if (EMAILJS_PUBLIC_KEY) {
+        emailjs.init(EMAILJS_PUBLIC_KEY);
+      }
+    } catch (e) {
+      // אם init נכשל זה לא אמור להפיל את האפליקציה — נמשיך כי send עדיין יקבל publicKey
+      console.warn('EmailJS init warning:', e);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const handleInputChange = (field, value) => {
@@ -71,7 +95,7 @@ const SurveyForm = () => {
   const handleStarRating = (question, rating) => {
     setFormData(prev => ({
       ...prev,
-      starRatings: { ...prev.starRatings, [question]: rating }
+      starRatings: { ...(prev.starRatings || {}), [question]: rating }
     }));
   };
 
@@ -99,14 +123,24 @@ const SurveyForm = () => {
     setIsSubmitting(true);
     setError('');
 
-    try {
-      // ✅ FIX 2+3: הגנות על מערכים + פורמט דירוגים
-      const templateParams = {
-        ...formData,
-        star_ratings: Object.entries(formData.starRatings || {})
-          .map(([q, r]) => `${q}: ${r}/5`)
-          .join('\n'),
+    // ✅ ולידציה מוקדמת כדי לא לשלוח "סתם" ולהבין מהר מה חסר
+    if (!EMAILJS_SERVICE_ID || !EMAILJS_TEMPLATE_ID || !EMAILJS_PUBLIC_KEY) {
+      setIsSubmitting(false);
+      setError('חסרים פרטי EmailJS (Service/Template/Public Key). בדקי שהוגדרו נכון.');
+      return;
+    }
 
+    try {
+      const starRatingsText = Object.entries(formData.starRatings || {})
+        .map(([q, r]) => `${q}: ${r}/5`)
+        .join('\n');
+
+      const templateParams = {
+        // נשאיר את כל המידע המקורי:
+        ...formData,
+
+        // וגם פורמטים "נוחים לקריאה" (אם תרצי לשים אותם בתבנית):
+        star_ratings: starRatingsText,
         challenges: (formData.challenges || []).join(', '),
         timeWasters: (formData.timeWasters || []).join(', '),
         goals: (formData.goals || []).join(', '),
@@ -115,21 +149,74 @@ const SurveyForm = () => {
         commonQuestions: (formData.commonQuestions || []).join(', '),
         salesProcess: (formData.salesProcess || []).join(', '),
         botGoals: (formData.botGoals || []).join(', '),
-        botActiveTime: (formData.botActiveTime || []).join(', ')
+        botActiveTime: (formData.botActiveTime || []).join(', '),
+
+        // ✅ תוספת שדות "סטנדרטיים" שיותר נפוצים ב-EmailJS templates:
+        from_name: formData.contactName || '',
+        reply_to: formData.email || '',
+        user_email: formData.email || '',
+        user_name: formData.contactName || '',
+        phone_number: formData.phone || '',
+        business_name: formData.businessName || '',
+
+        // ✅ שדה message אחד שמרכז הכל — שימושי לתבנית “פשוטה”:
+        message: [
+          `שם: ${formData.contactName || 'לא צוין'}`,
+          `אימייל: ${formData.email || 'לא צוין'}`,
+          `טלפון: ${formData.phone || 'לא צוין'}`,
+          `שם העסק: ${formData.businessName || 'לא צוין'}`,
+          `תחום העסק: ${formData.businessSector || 'לא צוין'}`,
+          `איך הגיעו אלינו: ${formData.discoverySource || 'לא צוין'}`,
+          `הכנסה חודשית: ${formData.revenue || 'לא צוין'}`,
+          `נוכחות דיגיטלית: ${formData.digitalPresence || 'לא צוין'}`,
+          '',
+          `אתגרים: ${(formData.challenges || []).join(', ') || 'לא צוין'}`,
+          `גוזלי זמן: ${(formData.timeWasters || []).join(', ') || 'לא צוין'}`,
+          `מטרות: ${(formData.goals || []).join(', ') || 'לא צוין'}`,
+          '',
+          `מה ייחשב הצלחה: ${formData.successMetric || 'לא צוין'}`,
+          '',
+          `ניהול שירות: ${(formData.serviceManagement || []).join(', ') || 'לא צוין'}`,
+          `מקורות לידים: ${(formData.leadSources || []).join(', ') || 'לא צוין'}`,
+          `שאלות נפוצות: ${(formData.commonQuestions || []).join(', ') || 'לא צוין'}`,
+          '',
+          `לידים בחודש: ${formData.monthlyLeads || 'לא צוין'}`,
+          `תהליך מכירה: ${(formData.salesProcess || []).join(', ') || 'לא צוין'}`,
+          `זמן תגובה: ${formData.responseTime || 'לא צוין'}`,
+          `תהליך לידים שלא נסגרו: ${formData.lostLeadsProcess || 'לא צוין'}`,
+          '',
+          `מטרות בוט: ${(formData.botGoals || []).join(', ') || 'לא צוין'}`,
+          `זמני פעילות בוט: ${(formData.botActiveTime || []).join(', ') || 'לא צוין'}`,
+          '',
+          `ניסיון קודם: ${formData.priorExperience || 'לא צוין'}`,
+          `מטרת חוויית משתמש: ${formData.userExperienceGoal || 'לא צוין'}`,
+          '',
+          `דירוגי כוכבים:\n${starRatingsText || 'לא צוין'}`
+        ].join('\n')
       };
 
-      // ✅ FIX 2: חתימה תקינה של send (עם publicKey כאובייקט)
+      // ✅ שליחה יציבה (מתאים לגרסאות מודרניות + יוצר פחות טעויות של signature)
       await emailjs.send(
-        'service_04u46mc',
-        'template_44cshno',
+        EMAILJS_SERVICE_ID,
+        EMAILJS_TEMPLATE_ID,
         templateParams,
-        { publicKey: '0MvQ0-Daq0m7nbe2D' }
+        { publicKey: EMAILJS_PUBLIC_KEY }
       );
 
       setIsSuccess(true);
       window.scrollTo({ top: 0, behavior: 'smooth' });
     } catch (err) {
-      setError('חלה שגיאה בשליחת הטופס. נא לבדוק את החיבור לאינטרנט ולנסות שוב.');
+      // ✅ הודעת שגיאה הרבה יותר אינפורמטיבית (כדי שתראי אם זה "Account not found" / "Unauthorized" וכו')
+      const rawText = err?.text || err?.message || '';
+      const status = err?.status ? ` (סטטוס ${err.status})` : '';
+      const hint =
+        rawText?.toLowerCase?.().includes('account not found')
+          ? 'נראה שה-Public Key/Service/Template לא תואמים לאותו חשבון EmailJS. בדקי שהם מאותו פרויקט.'
+          : '';
+
+      setError(
+        `חלה שגיאה בשליחת הטופס${status}. ${hint ? hint : 'נא לנסות שוב.'}`
+      );
       console.error('EmailJS Error:', err);
     } finally {
       setIsSubmitting(false);
@@ -137,18 +224,28 @@ const SurveyForm = () => {
   };
 
   const CheckboxOption = ({ field, label, emoji }) => (
-    <label className={`flex items-center justify-between p-4 rounded-2xl border-2 transition-all cursor-pointer mb-2 ${
-      formData[field]?.includes(label)
-        ? 'border-[#000ab9] bg-blue-50 shadow-md transform scale-[1.01]'
-        : 'border-slate-100 hover:border-slate-200 bg-white'
-    }`}>
+    <label
+      className={`flex items-center justify-between p-4 rounded-2xl border-2 transition-all cursor-pointer mb-2 ${
+        formData[field]?.includes(label)
+          ? 'border-[#000ab9] bg-blue-50 shadow-md transform scale-[1.01]'
+          : 'border-slate-100 hover:border-slate-200 bg-white'
+      }`}
+    >
       <div className="flex items-center gap-3">
-        <div className={`w-6 h-6 rounded-md border-2 flex items-center justify-center transition-all ${
-          formData[field]?.includes(label) ? 'bg-[#000ab9] border-[#000ab9]' : 'border-slate-300'
-        }`}>
-          {formData[field]?.includes(label) && <Check size={16} className="text-white" />}
+        <div
+          className={`w-6 h-6 rounded-md border-2 flex items-center justify-center transition-all ${
+            formData[field]?.includes(label)
+              ? 'bg-[#000ab9] border-[#000ab9]'
+              : 'border-slate-300'
+          }`}
+        >
+          {formData[field]?.includes(label) && (
+            <Check size={16} className="text-white" />
+          )}
         </div>
-        <span className="font-bold text-slate-700 text-lg">{label} {emoji}</span>
+        <span className="font-bold text-slate-700 text-lg">
+          {label} {emoji}
+        </span>
       </div>
       <input
         type="checkbox"
@@ -160,16 +257,22 @@ const SurveyForm = () => {
   );
 
   const RadioOption = ({ field, label, value }) => (
-    <label className={`flex items-center justify-between p-4 rounded-2xl border-2 transition-all cursor-pointer mb-2 ${
-      formData[field] === value
-        ? 'border-[#000ab9] bg-blue-50 shadow-md transform scale-[1.01]'
-        : 'border-slate-100 hover:border-slate-200 bg-white'
-    }`}>
+    <label
+      className={`flex items-center justify-between p-4 rounded-2xl border-2 transition-all cursor-pointer mb-2 ${
+        formData[field] === value
+          ? 'border-[#000ab9] bg-blue-50 shadow-md transform scale-[1.01]'
+          : 'border-slate-100 hover:border-slate-200 bg-white'
+      }`}
+    >
       <div className="flex items-center gap-3">
-        <div className={`w-6 h-6 rounded-full border-2 flex items-center justify-center transition-all ${
-          formData[field] === value ? 'border-[#000ab9]' : 'border-slate-300'
-        }`}>
-          {formData[field] === value && <div className="w-3 h-3 bg-[#000ab9] rounded-full" />}
+        <div
+          className={`w-6 h-6 rounded-full border-2 flex items-center justify-center transition-all ${
+            formData[field] === value ? 'border-[#000ab9]' : 'border-slate-300'
+          }`}
+        >
+          {formData[field] === value && (
+            <div className="w-3 h-3 bg-[#000ab9] rounded-full" />
+          )}
         </div>
         <span className="font-bold text-slate-700 text-lg">{label}</span>
       </div>
@@ -185,17 +288,23 @@ const SurveyForm = () => {
 
   if (isSuccess) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-[#f8fafc] p-4 text-right" dir="rtl">
+      <div
+        className="min-h-screen flex items-center justify-center bg-[#f8fafc] p-4 text-right"
+        dir="rtl"
+      >
         <style>{`* { font-family: "FbAsparagos", sans-serif !important; }`}</style>
         <div className="bg-white p-12 rounded-[40px] shadow-2xl text-center max-w-2xl w-full border-t-[12px] border-[#52de4a] animate-in zoom-in duration-500">
           <div className="mb-8 bg-green-50 w-28 h-28 rounded-full flex items-center justify-center mx-auto shadow-inner">
             <CheckCircle2 size={70} className="text-[#52de4a]" />
           </div>
-          <h2 className="text-5xl font-black text-[#000ab9] mb-6">האבחון נשלח בהצלחה!</h2>
+          <h2 className="text-5xl font-black text-[#000ab9] mb-6">
+            האבחון נשלח בהצלחה!
+          </h2>
           <div className="space-y-6 text-slate-600 text-2xl font-medium leading-relaxed">
             <p>תודה רבה על השיתוף ועל הזמן שהקדשת.</p>
             <div className="bg-blue-50 p-8 rounded-[30px] border-r-8 border-[#000ab9] text-[#000ab9] font-bold shadow-sm">
-              ב-24 השעות הקרובות ישלח אליך סיכום האבחון המלא יחד עם המלצות ראשוניות לייעול והטמעת בינה מלאכותית בעסק שלך. 🚀
+              ב-24 השעות הקרובות ישלח אליך סיכום האבחון המלא יחד עם המלצות
+              ראשוניות לייעול והטמעת בינה מלאכותית בעסק שלך. 🚀
             </div>
             <p className="text-lg text-slate-400 italic">נתראה בקרוב!</p>
           </div>
@@ -205,7 +314,11 @@ const SurveyForm = () => {
   }
 
   return (
-    <div className="min-h-screen py-12 px-4 bg-[#f8fafc] selection:bg-blue-100" dir="rtl" style={fontStyle}>
+    <div
+      className="min-h-screen py-12 px-4 bg-[#f8fafc] selection:bg-blue-100"
+      dir="rtl"
+      style={fontStyle}
+    >
       <style>{`
         * { font-family: "FbAsparagos", sans-serif !important; }
         input::placeholder, textarea::placeholder { font-family: "FbAsparagos", sans-serif !important; }
@@ -216,8 +329,12 @@ const SurveyForm = () => {
         {currentStep > 0 && (
           <div className="mb-10 px-4">
             <div className="flex justify-between items-end mb-4 font-bold text-[#000ab9]">
-              <span className="text-2xl font-black italic tracking-tight">הדסה מתן | אבחון עסק חכם</span>
-              <span className="text-base bg-blue-100 px-4 py-1.5 rounded-full shadow-sm">שלב {currentStep} מתוך {totalSteps}</span>
+              <span className="text-2xl font-black italic tracking-tight">
+                הדסה מתן | אבחון עסק חכם
+              </span>
+              <span className="text-base bg-blue-100 px-4 py-1.5 rounded-full shadow-sm">
+                שלב {currentStep} מתוך {totalSteps}
+              </span>
             </div>
             <div className="h-4 w-full bg-white rounded-full shadow-inner border border-slate-100 overflow-hidden p-1">
               <div
@@ -232,21 +349,49 @@ const SurveyForm = () => {
           <div className="absolute top-0 right-0 w-32 h-32 bg-blue-50 rounded-bl-full opacity-50 -z-0" />
 
           <div className="animate-in fade-in slide-in-from-bottom-8 duration-700 relative z-10 text-right">
+            {/* ✅ עיצוב מחדש לטקסט בעמוד הפתיחה (שלב 0) */}
             {currentStep === 0 && (
-              <div className="space-y-8 leading-relaxed text-slate-700">
-                <div className="text-center mb-10">
-                  <div className="bg-blue-50 w-24 h-24 rounded-3xl flex items-center justify-center mx-auto mb-6 transform rotate-12 shadow-sm">
+              <div className="space-y-10 text-slate-700">
+                <div className="text-center">
+                  <div className="bg-blue-50 w-24 h-24 rounded-3xl flex items-center justify-center mx-auto mb-6 shadow-sm rotate-6">
                     <Zap size={50} className="text-[#000ab9] animate-pulse" />
                   </div>
-                  <h1 className="text-5xl font-black text-[#000ab9] mt-4 tracking-tighter">שאלון לאבחון העסק 🤖</h1>
+
+                  <h1 className="text-5xl md:text-6xl font-black text-[#000ab9] tracking-tight leading-tight">
+                    שאלון לאבחון העסק 🤖
+                  </h1>
+
+                  <p className="mt-4 text-xl md:text-2xl text-slate-500 font-bold">
+                    כמה דקות — ותקבלי מפת דרכים חכמה ומדויקת לעסק שלך 🎯
+                  </p>
                 </div>
-                <h2 className="text-4xl font-bold text-slate-800">היי 😄</h2>
-                <p className="text-2xl italic font-medium leading-relaxed">אנחנו יודעים שאתם עמוסים – אולי בין לקוח לשיחה 📞, אולי רגע לפני הפסקת קפה ☕,</p>
-                <p className="text-3xl font-black text-[#000ab9] leading-tight">אבל אם הגעתם לפה – כנראה שאתם רוצים להפוך את העסק שלכם לחכם, יעיל וחסכוני יותר 🧠</p>
-                <div className="bg-gradient-to-l from-slate-50 to-white p-8 rounded-[35px] border-r-8 border-[#7cd6de] font-bold text-2xl italic shadow-sm">
-                  📋 השאלון לוקח כמה דקות בלבד ומאפשר לנו לשלוח לכם מפת דרכים טכנולוגית מדויקת עבור העסק שלכם 🎯
+
+                <div className="max-w-3xl mx-auto space-y-5 text-center">
+                  <p className="text-2xl md:text-3xl font-black text-slate-800 leading-snug">
+                    היי 😄
+                  </p>
+
+                  <p className="text-xl md:text-2xl font-medium leading-relaxed text-slate-600">
+                    אנחנו יודעים שאתם עמוסים — בין לקוח לשיחה 📞 או רגע לפני קפה ☕
+                    <br />
+                    לכן בנינו שאלון קצרצר שמוציא תובנות משמעותיות בלי לחפור 🙂
+                  </p>
+
+                  <div className="bg-gradient-to-l from-slate-50 to-white p-7 md:p-8 rounded-[35px] border-r-8 border-[#7cd6de] shadow-sm text-right">
+                    <div className="text-2xl md:text-3xl font-black text-[#000ab9] leading-snug">
+                      מה תקבלי בסוף?
+                    </div>
+                    <ul className="mt-4 space-y-3 text-lg md:text-xl font-bold text-slate-700 leading-relaxed">
+                      <li>✅ תמונת מצב חדה על איפה העסק “נוזל” זמן וכסף</li>
+                      <li>✅ רעיונות לאוטומציות ובינה מלאכותית שמתאימות בדיוק לעסק שלך</li>
+                      <li>✅ כיוון ברור לשיפור שירות, לידים ומכירות — בלי בלגן</li>
+                    </ul>
+                  </div>
+
+                  <p className="text-2xl md:text-3xl font-black text-[#000ab9] pt-2">
+                    מוכנים להתחיל? ממש מכאן 👇
+                  </p>
                 </div>
-                <p className="text-center text-[#000ab9] font-black animate-bounce text-3xl pt-10">מוכנים להתחיל? מכאן 👇</p>
               </div>
             )}
 
@@ -255,41 +400,94 @@ const SurveyForm = () => {
                 <div className="text-center">
                   <Building size={50} className="text-[#000ab9] mx-auto mb-4" />
                   <h2 className="text-4xl font-black text-[#000ab9]">נעים להכיר</h2>
-                  <p className="text-slate-500 text-xl mt-2 font-bold">בואו נכיר - ספרו לנו על העסק שלכם</p>
+                  <p className="text-slate-500 text-xl mt-2 font-bold">
+                    בואו נכיר - ספרו לנו על העסק שלכם
+                  </p>
                 </div>
+
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-8 font-bold">
                   <div className="space-y-3 text-[#000ab9]">
                     <label className="block text-xl italic">* שם מלא</label>
-                    <input type="text" placeholder="השם שלך" className="w-full p-5 bg-slate-50 rounded-[25px] border-2 border-transparent focus:border-[#7cd6de] focus:bg-white transition-all text-xl shadow-inner" value={formData.contactName} onChange={(e) => handleInputChange('contactName', e.target.value)} />
+                    <input
+                      type="text"
+                      placeholder="השם שלך"
+                      className="w-full p-5 bg-slate-50 rounded-[25px] border-2 border-transparent focus:border-[#7cd6de] focus:bg-white transition-all text-xl shadow-inner"
+                      value={formData.contactName}
+                      onChange={(e) => handleInputChange('contactName', e.target.value)}
+                    />
                   </div>
+
                   <div className="space-y-3 text-[#000ab9]">
                     <label className="block text-xl italic">* אימייל</label>
-                    <input type="email" placeholder="email@example.com" dir="ltr" className="w-full p-5 bg-slate-50 rounded-[25px] border-2 border-transparent focus:border-[#7cd6de] focus:bg-white transition-all text-xl text-right shadow-inner" value={formData.email} onChange={(e) => handleInputChange('email', e.target.value)} />
+                    <input
+                      type="email"
+                      placeholder="email@example.com"
+                      dir="ltr"
+                      className="w-full p-5 bg-slate-50 rounded-[25px] border-2 border-transparent focus:border-[#7cd6de] focus:bg-white transition-all text-xl text-right shadow-inner"
+                      value={formData.email}
+                      onChange={(e) => handleInputChange('email', e.target.value)}
+                    />
                   </div>
+
                   <div className="space-y-3 text-[#000ab9]">
                     <label className="block text-xl italic">טלפון</label>
-                    <input type="text" placeholder="050-0000000" className="w-full p-5 bg-slate-50 rounded-[25px] border-2 border-transparent focus:border-[#7cd6de] focus:bg-white transition-all text-xl text-right shadow-inner" value={formData.phone} onChange={(e) => handleInputChange('phone', e.target.value)} />
+                    <input
+                      type="text"
+                      placeholder="050-0000000"
+                      className="w-full p-5 bg-slate-50 rounded-[25px] border-2 border-transparent focus:border-[#7cd6de] focus:bg-white transition-all text-xl text-right shadow-inner"
+                      value={formData.phone}
+                      onChange={(e) => handleInputChange('phone', e.target.value)}
+                    />
                   </div>
+
                   <div className="space-y-3 text-[#000ab9]">
                     <label className="block text-xl italic">שם העסק</label>
-                    <input type="text" placeholder="שם העסק שלך" className="w-full p-5 bg-slate-50 rounded-[25px] border-2 border-transparent focus:border-[#7cd6de] focus:bg-white transition-all text-xl text-right shadow-inner" value={formData.businessName} onChange={(e) => handleInputChange('businessName', e.target.value)} />
+                    <input
+                      type="text"
+                      placeholder="שם העסק שלך"
+                      className="w-full p-5 bg-slate-50 rounded-[25px] border-2 border-transparent focus:border-[#7cd6de] focus:bg-white transition-all text-xl text-right shadow-inner"
+                      value={formData.businessName}
+                      onChange={(e) => handleInputChange('businessName', e.target.value)}
+                    />
                   </div>
+
                   <div className="space-y-3 text-[#000ab9]">
                     <label className="block text-xl italic">תחום העסק</label>
-                    <input type="text" placeholder="במה העסק עוסק?" className="w-full p-5 bg-slate-50 rounded-[25px] border-2 border-transparent focus:border-[#7cd6de] focus:bg-white transition-all text-xl text-right shadow-inner" value={formData.businessSector} onChange={(e) => handleInputChange('businessSector', e.target.value)} />
+                    <input
+                      type="text"
+                      placeholder="במה העסק עוסק?"
+                      className="w-full p-5 bg-slate-50 rounded-[25px] border-2 border-transparent focus:border-[#7cd6de] focus:bg-white transition-all text-xl text-right shadow-inner"
+                      value={formData.businessSector}
+                      onChange={(e) => handleInputChange('businessSector', e.target.value)}
+                    />
                   </div>
+
                   <div className="space-y-3 text-[#000ab9]">
                     <label className="block text-xl italic">איך הגעתם אלינו?</label>
-                    <input type="text" placeholder="פייסבוק, המלצה, גוגל..." className="w-full p-5 bg-slate-50 rounded-[25px] border-2 border-transparent focus:border-[#7cd6de] focus:bg-white transition-all text-xl text-right shadow-inner" value={formData.discoverySource} onChange={(e) => handleInputChange('discoverySource', e.target.value)} />
+                    <input
+                      type="text"
+                      placeholder="פייסבוק, המלצה, גוגל..."
+                      className="w-full p-5 bg-slate-50 rounded-[25px] border-2 border-transparent focus:border-[#7cd6de] focus:bg-white transition-all text-xl text-right shadow-inner"
+                      value={formData.discoverySource}
+                      onChange={(e) => handleInputChange('discoverySource', e.target.value)}
+                    />
                   </div>
                 </div>
-                {error && <div className="bg-red-50 text-red-500 p-4 rounded-2xl text-center font-black border-r-4 border-red-500 animate-bounce">{error}</div>}
+
+                {error && (
+                  <div className="bg-red-50 text-red-500 p-4 rounded-2xl text-center font-black border-r-4 border-red-500 animate-bounce">
+                    {error}
+                  </div>
+                )}
               </div>
             )}
 
             {currentStep === 2 && (
               <div className="space-y-8">
-                <div className="text-center mb-10"><h2 className="text-4xl font-black text-[#000ab9]">מה מפריע לכם היום בעסק?</h2><p className="text-slate-500 text-xl font-bold">ניתן לבחור כמה אופציות</p></div>
+                <div className="text-center mb-10">
+                  <h2 className="text-4xl font-black text-[#000ab9]">מה מפריע לכם היום בעסק?</h2>
+                  <p className="text-slate-500 text-xl font-bold">ניתן לבחור כמה אופציות</p>
+                </div>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <CheckboxOption field="challenges" label="ניהול זמן לא יעיל" emoji="⏰" />
                   <CheckboxOption field="challenges" label="שירות לקוחות איטי מדי" emoji="🎯" />
@@ -303,7 +501,10 @@ const SurveyForm = () => {
 
             {currentStep === 3 && (
               <div className="space-y-8">
-                <div className="text-center mb-10"><h2 className="text-4xl font-black text-[#000ab9]">מהם גוזלי הזמן המרכזיים?</h2><p className="text-slate-500 text-xl font-bold">איפה אתם מרגישים שאתם "מתבזבזים"?</p></div>
+                <div className="text-center mb-10">
+                  <h2 className="text-4xl font-black text-[#000ab9]">מהם גוזלי הזמן המרכזיים?</h2>
+                  <p className="text-slate-500 text-xl font-bold">איפה אתם מרגישים שאתם "מתבזבזים"?</p>
+                </div>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <CheckboxOption field="timeWasters" label="שיחות טלפון חוזרות" emoji="📞" />
                   <CheckboxOption field="timeWasters" label="מענה למיילים" emoji="📧" />
@@ -317,7 +518,10 @@ const SurveyForm = () => {
 
             {currentStep === 4 && (
               <div className="space-y-8">
-                <div className="text-center mb-10"><h2 className="text-4xl font-black text-[#000ab9]">מה המטרה המרכזית שלכם?</h2><p className="text-slate-500 text-xl font-bold">מה הכי חשוב לכם להשיג?</p></div>
+                <div className="text-center mb-10">
+                  <h2 className="text-4xl font-black text-[#000ab9]">מה המטרה המרכזית שלכם?</h2>
+                  <p className="text-slate-500 text-xl font-bold">מה הכי חשוב לכם להשיג?</p>
+                </div>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <CheckboxOption field="goals" label="לא לפספס אף ליד" emoji="🎯" />
                   <CheckboxOption field="goals" label="להגדיל את המכירות" emoji="💰" />
@@ -331,18 +535,30 @@ const SurveyForm = () => {
 
             {currentStep === 5 && (
               <div className="space-y-10 text-center">
-                <div className="inline-block p-6 bg-blue-50 rounded-[35px] text-[#000ab9] mb-4 shadow-sm transform -rotate-3"><Target size={60} /></div>
+                <div className="inline-block p-6 bg-blue-50 rounded-[35px] text-[#000ab9] mb-4 shadow-sm transform -rotate-3">
+                  <Target size={60} />
+                </div>
                 <h2 className="text-4xl font-black text-[#000ab9]">מה ייחשב הצלחה עבורכם?</h2>
                 <p className="text-slate-500 text-xl font-bold">תארו את המצב האידיאלי בעוד כמה חודשים</p>
-                <textarea className="w-full p-8 bg-slate-50 rounded-[40px] border-2 border-transparent focus:border-[#7cd6de] focus:bg-white outline-none h-56 text-right text-2xl shadow-inner transition-all" placeholder="לדוגמה: להגדיל אחוז המרה ב-25% תוך 4 חודשים..." value={formData.successMetric} onChange={(e) => handleInputChange('successMetric', e.target.value)} />
+                <textarea
+                  className="w-full p-8 bg-slate-50 rounded-[40px] border-2 border-transparent focus:border-[#7cd6de] focus:bg-white outline-none h-56 text-right text-2xl shadow-inner transition-all"
+                  placeholder="לדוגמה: להגדיל אחוז המרה ב-25% תוך 4 חודשים..."
+                  value={formData.successMetric}
+                  onChange={(e) => handleInputChange('successMetric', e.target.value)}
+                />
               </div>
             )}
 
             {currentStep === 6 && (
               <div className="space-y-10">
-                <div className="text-center mb-8"><h2 className="text-4xl font-black text-[#000ab9]">ניהול העסק וקבלת פניות</h2></div>
+                <div className="text-center mb-8">
+                  <h2 className="text-4xl font-black text-[#000ab9]">ניהול העסק וקבלת פניות</h2>
+                </div>
+
                 <div className="space-y-6">
-                  <p className="font-bold text-slate-700 text-2xl border-r-4 border-[#7cd6de] pr-4">איך כרגע מנוהל שירות הלקוחות בעסק שלכם?</p>
+                  <p className="font-bold text-slate-700 text-2xl border-r-4 border-[#7cd6de] pr-4">
+                    איך כרגע מנוהל שירות הלקוחות בעסק שלכם?
+                  </p>
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <CheckboxOption field="serviceManagement" label="אני בעצמי עונה לכל הפניות" emoji="👤" />
                     <CheckboxOption field="serviceManagement" label="יש לי צוות שמטפל בפניות" emoji="👥" />
@@ -350,8 +566,11 @@ const SurveyForm = () => {
                     <CheckboxOption field="serviceManagement" label="יש לנו מיקור חוץ" emoji="🏢" />
                   </div>
                 </div>
+
                 <div className="mt-12 space-y-6">
-                  <p className="font-bold text-slate-700 text-2xl border-r-4 border-[#7cd6de] pr-4">מאיפה הפניות מתקבלות? (ניתן לבחור כמה)</p>
+                  <p className="font-bold text-slate-700 text-2xl border-r-4 border-[#7cd6de] pr-4">
+                    מאיפה הפניות מתקבלות? (ניתן לבחור כמה)
+                  </p>
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <CheckboxOption field="leadSources" label="האתר שלנו" emoji="🌐" />
                     <CheckboxOption field="leadSources" label="פייסבוק" emoji="🔵" />
@@ -363,8 +582,11 @@ const SurveyForm = () => {
                     <CheckboxOption field="leadSources" label="הפניות מלקוחות קיימים" emoji="👤" />
                   </div>
                 </div>
+
                 <div className="mt-12 space-y-6">
-                  <p className="font-bold text-slate-700 text-2xl border-r-4 border-[#7cd6de] pr-4">אילו סוגי שאלות נפוצות אתם מקבלים?</p>
+                  <p className="font-bold text-slate-700 text-2xl border-r-4 border-[#7cd6de] pr-4">
+                    אילו סוגי שאלות נפוצות אתם מקבלים?
+                  </p>
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <CheckboxOption field="commonQuestions" label="שאלות על מחירים" emoji="💰" />
                     <CheckboxOption field="commonQuestions" label="זמינות ותיאום פגישות" emoji="📅" />
@@ -381,15 +603,30 @@ const SurveyForm = () => {
 
             {currentStep === 7 && (
               <div className="space-y-10">
-                <div className="text-center mb-8"><h2 className="text-4xl font-black text-[#000ab9]">תהליך המכירה שלכם</h2></div>
+                <div className="text-center mb-8">
+                  <h2 className="text-4xl font-black text-[#000ab9]">תהליך המכירה שלכם</h2>
+                </div>
+
                 <div className="space-y-6">
                   <p className="font-bold text-slate-700 text-2xl">מהי כמות הלידים הממוצעת בחודש?</p>
                   <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
                     {['1-50', '50-200', '200-500', 'יותר מ-500'].map(v => (
-                      <button key={v} onClick={() => handleInputChange('monthlyLeads', v)} className={`p-5 rounded-[25px] border-2 font-bold transition-all text-xl shadow-sm ${formData.monthlyLeads === v ? 'bg-[#000ab9] text-white border-[#000ab9] transform scale-105' : 'bg-white border-slate-100 text-slate-600 hover:border-slate-300'}`}>{v}</button>
+                      <button
+                        key={v}
+                        onClick={() => handleInputChange('monthlyLeads', v)}
+                        className={`p-5 rounded-[25px] border-2 font-bold transition-all text-xl shadow-sm ${
+                          formData.monthlyLeads === v
+                            ? 'bg-[#000ab9] text-white border-[#000ab9] transform scale-105'
+                            : 'bg-white border-slate-100 text-slate-600 hover:border-slate-300'
+                        }`}
+                        type="button"
+                      >
+                        {v}
+                      </button>
                     ))}
                   </div>
                 </div>
+
                 <div className="mt-12 space-y-6">
                   <p className="font-bold text-slate-700 text-2xl">באיזה אופן תהליך המכירה קורה היום?</p>
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -401,26 +638,49 @@ const SurveyForm = () => {
                     <CheckboxOption field="salesProcess" label="מייל" emoji="📧" />
                   </div>
                 </div>
+
                 <div className="mt-12 space-y-6">
                   <p className="font-bold text-slate-700 text-2xl">מהו זמן התגובה הממוצע לליד?</p>
                   <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
                     {['מיידי', 'עד 24 שעות', '1-3 ימים', 'יותר מ-3 ימים'].map(v => (
-                      <button key={v} onClick={() => handleInputChange('responseTime', v)} className={`p-5 rounded-[25px] border-2 font-bold transition-all text-lg shadow-sm ${formData.responseTime === v ? 'bg-[#000ab9] text-white border-[#000ab9] transform scale-105' : 'bg-white border-slate-100 text-slate-600 hover:border-slate-300'}`}>{v}</button>
+                      <button
+                        key={v}
+                        onClick={() => handleInputChange('responseTime', v)}
+                        className={`p-5 rounded-[25px] border-2 font-bold transition-all text-lg shadow-sm ${
+                          formData.responseTime === v
+                            ? 'bg-[#000ab9] text-white border-[#000ab9] transform scale-105'
+                            : 'bg-white border-slate-100 text-slate-600 hover:border-slate-300'
+                        }`}
+                        type="button"
+                      >
+                        {v}
+                      </button>
                     ))}
                   </div>
                 </div>
+
                 <div className="mt-12 space-y-4">
                   <p className="font-bold text-slate-700 text-2xl">תארו את התהליך שעוברים לידים שלא סגרו אתכם:</p>
-                  <textarea className="w-full p-6 bg-slate-50 rounded-[30px] border-2 border-transparent focus:border-[#7cd6de] focus:bg-white outline-none h-32 text-right text-xl shadow-inner transition-all" placeholder="..." value={formData.lostLeadsProcess} onChange={(e) => handleInputChange('lostLeadsProcess', e.target.value)} />
+                  <textarea
+                    className="w-full p-6 bg-slate-50 rounded-[30px] border-2 border-transparent focus:border-[#7cd6de] focus:bg-white outline-none h-32 text-right text-xl shadow-inner transition-all"
+                    placeholder="..."
+                    value={formData.lostLeadsProcess}
+                    onChange={(e) => handleInputChange('lostLeadsProcess', e.target.value)}
+                  />
                 </div>
               </div>
             )}
 
             {currentStep === 8 && (
               <div className="space-y-10">
-                <div className="text-center mb-10"><h2 className="text-4xl font-black text-[#000ab9]">ציפיות מהאוטומציה</h2></div>
+                <div className="text-center mb-10">
+                  <h2 className="text-4xl font-black text-[#000ab9]">ציפיות מהאוטומציה</h2>
+                </div>
+
                 <div className="space-y-6">
-                  <p className="font-bold text-slate-700 text-2xl border-r-4 border-[#7cd6de] pr-4">מהן המטרות העיקריות מהכנסת אוטומציה?</p>
+                  <p className="font-bold text-slate-700 text-2xl border-r-4 border-[#7cd6de] pr-4">
+                    מהן המטרות העיקריות מהכנסת אוטומציה?
+                  </p>
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <CheckboxOption field="botGoals" label="מענה 24/7 ללקוחות" emoji="🕒" />
                     <CheckboxOption field="botGoals" label="סינון וכישור לידים אוטומטי" emoji="🎯" />
@@ -432,8 +692,11 @@ const SurveyForm = () => {
                     <CheckboxOption field="botGoals" label="הכוונה במשפך המכירות" emoji="🔄" />
                   </div>
                 </div>
+
                 <div className="mt-12 space-y-6">
-                  <p className="font-bold text-slate-700 text-2xl border-r-4 border-[#7cd6de] pr-4">מתי תרצו שהאוטומציה תהיה פעילה?</p>
+                  <p className="font-bold text-slate-700 text-2xl border-r-4 border-[#7cd6de] pr-4">
+                    מתי תרצו שהאוטומציה תהיה פעילה?
+                  </p>
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <CheckboxOption field="botActiveTime" label="24/7 כל השבוע" emoji="🌍" />
                     <CheckboxOption field="botActiveTime" label="בשעות העבודה בלבד" emoji="🕒" />
@@ -452,8 +715,11 @@ const SurveyForm = () => {
                     <Star size={45} className="text-yellow-400 fill-yellow-400" />
                   </div>
                   <h2 className="text-4xl font-black text-[#000ab9]">דרגת ההזדהות עם אתגרים</h2>
-                  <p className="text-slate-500 text-xl font-bold mt-2">עד כמה המשפטים הבאים מתארים את העסק שלכם?</p>
+                  <p className="text-slate-500 text-xl font-bold mt-2">
+                    עד כמה המשפטים הבאים מתארים את העסק שלכם?
+                  </p>
                 </div>
+
                 <div className="space-y-4">
                   {[
                     "המזכיר/ה שלי עסוק/ה רוב היום בשאלות חוזרות מלקוחות",
@@ -468,7 +734,10 @@ const SurveyForm = () => {
                     "הלקוחות שלי מתקשים למצוא תשובות לשאלות נפוצות בצורה מהירה",
                     "הלקוחות שלי לא מצליחים להגיע לשירותים שהעסק שלי מציע בגלל חוסר במידע זמין ויעיל"
                   ].map((q) => (
-                    <div key={q} className="flex flex-col md:flex-row md:items-center justify-between p-6 bg-slate-50 rounded-[25px] gap-6 border border-transparent hover:border-slate-200 hover:bg-white transition-all shadow-sm">
+                    <div
+                      key={q}
+                      className="flex flex-col md:flex-row md:items-center justify-between p-6 bg-slate-50 rounded-[25px] gap-6 border border-transparent hover:border-slate-200 hover:bg-white transition-all shadow-sm"
+                    >
                       <span className="font-bold text-slate-700 flex-1 text-lg leading-tight">{q}</span>
                       <div className="flex gap-2 justify-center bg-white p-3 rounded-2xl shadow-inner border border-slate-100">
                         {[1, 2, 3, 4, 5].map((star) => (
@@ -480,7 +749,11 @@ const SurveyForm = () => {
                           >
                             <Star
                               size={32}
-                              className={`transition-colors ${formData.starRatings[q] >= star ? 'text-yellow-400 fill-yellow-400' : 'text-slate-200 hover:text-yellow-200'}`}
+                              className={`transition-colors ${
+                                (formData.starRatings || {})[q] >= star
+                                  ? 'text-yellow-400 fill-yellow-400'
+                                  : 'text-slate-200 hover:text-yellow-200'
+                              }`}
                             />
                           </button>
                         ))}
@@ -497,8 +770,11 @@ const SurveyForm = () => {
                   <BarChart3 size={50} className="text-[#000ab9] mx-auto mb-4" />
                   <h2 className="text-4xl font-black text-[#000ab9]">מצב פיננסי ודיגיטלי</h2>
                 </div>
+
                 <div className="space-y-6">
-                  <p className="font-bold text-slate-700 text-2xl pr-4 border-r-4 border-[#000ab9]">מהו טווח ההכנסה החודשי הממוצע של העסק?</p>
+                  <p className="font-bold text-slate-700 text-2xl pr-4 border-r-4 border-[#000ab9]">
+                    מהו טווח ההכנסה החודשי הממוצע של העסק?
+                  </p>
                   <select
                     className="w-full p-6 bg-slate-50 rounded-[30px] border-2 border-transparent focus:border-[#7cd6de] focus:bg-white outline-none text-right font-bold text-xl shadow-inner appearance-none cursor-pointer"
                     value={formData.revenue}
@@ -510,9 +786,19 @@ const SurveyForm = () => {
                     <option value="100k+">מעל 100,000 ₪</option>
                   </select>
                 </div>
+
                 <div className="space-y-6">
-                  <p className="font-bold text-slate-700 text-2xl pr-4 border-r-4 border-[#000ab9]">נוכחות דיגיטלית (קישור לאתר או עמוד עסקי):</p>
-                  <input type="text" placeholder="https://..." className="w-full p-6 bg-slate-50 rounded-[30px] border-2 border-transparent focus:border-[#7cd6de] focus:bg-white outline-none text-left shadow-inner font-mono text-xl" dir="ltr" value={formData.digitalPresence} onChange={(e) => handleInputChange('digitalPresence', e.target.value)} />
+                  <p className="font-bold text-slate-700 text-2xl pr-4 border-r-4 border-[#000ab9]">
+                    נוכחות דיגיטלית (קישור לאתר או עמוד עסקי):
+                  </p>
+                  <input
+                    type="text"
+                    placeholder="https://..."
+                    className="w-full p-6 bg-slate-50 rounded-[30px] border-2 border-transparent focus:border-[#7cd6de] focus:bg-white outline-none text-left shadow-inner font-mono text-xl"
+                    dir="ltr"
+                    value={formData.digitalPresence}
+                    onChange={(e) => handleInputChange('digitalPresence', e.target.value)}
+                  />
                 </div>
               </div>
             )}
@@ -523,16 +809,27 @@ const SurveyForm = () => {
                   <Sparkles size={50} className="text-[#000ab9] mx-auto mb-4" />
                   <h2 className="text-4xl font-black text-[#000ab9]">חוויית משתמש וניסיון קודם</h2>
                 </div>
+
                 <div className="space-y-6 text-right mb-10">
-                  <p className="font-bold text-slate-700 text-2xl border-r-4 border-[#000ab9] pr-4">האם יש לכם ניסיון קודם עם בוטים או מערכות אוטומטיות?</p>
+                  <p className="font-bold text-slate-700 text-2xl border-r-4 border-[#000ab9] pr-4">
+                    האם יש לכם ניסיון קודם עם בוטים או מערכות אוטומטיות?
+                  </p>
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <RadioOption field="priorExperience" label="כן, יש לנו ניסיון קודם" value="yes" />
                     <RadioOption field="priorExperience" label="לא, זה יהיה הבוט הראשון שלנו" value="no" />
                   </div>
                 </div>
+
                 <div className="space-y-6">
-                  <p className="font-bold text-slate-700 text-2xl border-r-4 border-[#000ab9] pr-4">איזה סוג של חוויית משתמש הייתם רוצים לספק בבוט שלכם?</p>
-                  <textarea className="w-full p-8 bg-slate-50 rounded-[40px] border-2 border-transparent focus:border-[#7cd6de] focus:bg-white outline-none h-48 text-right text-xl shadow-inner transition-all" placeholder="לדוגמה: יחס אישי, מענה מהיר, מקצועיות, הומור וכו'..." value={formData.userExperienceGoal} onChange={(e) => handleInputChange('userExperienceGoal', e.target.value)} />
+                  <p className="font-bold text-slate-700 text-2xl border-r-4 border-[#000ab9] pr-4">
+                    איזה סוג של חוויית משתמש הייתם רוצים לספק בבוט שלכם?
+                  </p>
+                  <textarea
+                    className="w-full p-8 bg-slate-50 rounded-[40px] border-2 border-transparent focus:border-[#7cd6de] focus:bg-white outline-none h-48 text-right text-xl shadow-inner transition-all"
+                    placeholder="לדוגמה: יחס אישי, מענה מהיר, מקצועיות, הומור וכו'..."
+                    value={formData.userExperienceGoal}
+                    onChange={(e) => handleInputChange('userExperienceGoal', e.target.value)}
+                  />
                 </div>
               </div>
             )}
@@ -542,27 +839,40 @@ const SurveyForm = () => {
                 <div className="text-center mb-10">
                   <CheckCircle2 size={60} className="text-[#000ab9] mx-auto mb-4" />
                   <h2 className="text-4xl font-black text-[#000ab9]">סיכום ושליחה</h2>
-                  <p className="text-slate-500 text-xl font-bold mt-2 italic">כל המידע נאסף. אנחנו מוכנים לאבחן את העסק שלך!</p>
+                  <p className="text-slate-500 text-xl font-bold mt-2 italic">
+                    כל המידע נאסף. אנחנו מוכנים לאבחן את העסק שלך!
+                  </p>
                 </div>
+
                 <div className="bg-gradient-to-br from-slate-50 to-white p-10 rounded-[40px] border-2 border-slate-100 shadow-xl relative overflow-hidden">
                   <div className="absolute top-0 left-0 w-2 h-full bg-[#000ab9]" />
-                  <h3 className="text-2xl font-black text-slate-800 mb-8 border-b pb-4">תקציר פרטים:</h3>
+                  <h3 className="text-2xl font-black text-slate-800 mb-8 border-b pb-4">
+                    תקציר פרטים:
+                  </h3>
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-y-8 gap-x-12">
                     <div className="flex justify-between items-center border-b border-slate-100 pb-2">
                       <span className="font-black text-slate-500">עסק:</span>
-                      <span className="text-xl font-bold text-[#000ab9]">{formData.businessName || "לא צוין"}</span>
+                      <span className="text-xl font-bold text-[#000ab9]">
+                        {formData.businessName || "לא צוין"}
+                      </span>
                     </div>
                     <div className="flex justify-between items-center border-b border-slate-100 pb-2">
                       <span className="font-black text-slate-500">איש קשר:</span>
-                      <span className="text-xl font-bold text-[#000ab9]">{formData.contactName || "לא צוין"}</span>
+                      <span className="text-xl font-bold text-[#000ab9]">
+                        {formData.contactName || "לא צוין"}
+                      </span>
                     </div>
                     <div className="flex justify-between items-center border-b border-slate-100 pb-2">
                       <span className="font-black text-slate-500">מייל:</span>
-                      <span className="text-xl font-bold text-[#000ab9] font-mono">{formData.email}</span>
+                      <span className="text-xl font-bold text-[#000ab9] font-mono">
+                        {formData.email}
+                      </span>
                     </div>
                     <div className="flex justify-between items-center border-b border-slate-100 pb-2">
                       <span className="font-black text-slate-500">טלפון:</span>
-                      <span className="text-xl font-bold text-[#000ab9]">{formData.phone || "לא צוין"}</span>
+                      <span className="text-xl font-bold text-[#000ab9]">
+                        {formData.phone || "לא צוין"}
+                      </span>
                     </div>
                   </div>
                 </div>
@@ -580,6 +890,7 @@ const SurveyForm = () => {
                 <ArrowRight size={30} /> חזרה
               </button>
             )}
+
             <button
               onClick={currentStep === totalSteps ? handleSubmit : nextStep}
               disabled={isSubmitting}
@@ -591,7 +902,9 @@ const SurveyForm = () => {
               type="button"
             >
               {isSubmitting ? (
-                <><Loader2 className="animate-spin" size={30} /> שולח אבחון...</>
+                <>
+                  <Loader2 className="animate-spin" size={30} /> שולח אבחון...
+                </>
               ) : (
                 <>
                   {currentStep === totalSteps ? 'שלח אבחון עכשיו 🚀' : 'המשך לשלב הבא'}
@@ -601,7 +914,11 @@ const SurveyForm = () => {
             </button>
           </div>
 
-          {error && <p className="text-red-500 text-center font-black mt-6 text-xl animate-pulse">{error}</p>}
+          {error && (
+            <p className="text-red-500 text-center font-black mt-6 text-xl animate-pulse">
+              {error}
+            </p>
+          )}
         </div>
       </div>
     </div>
