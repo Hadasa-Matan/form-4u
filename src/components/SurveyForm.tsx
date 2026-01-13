@@ -343,7 +343,7 @@ const SurveyForm = () => {
                   </div>
                   <div className="space-y-3 text-[#000ab9]">
                     <label className="block text-xl italic">איך הגעתם אלינו?</label>
-                    <input type="text" placeholder="פייסבוק, המלצה, גוגל..." className="w-full p-5 bg-slate-50 rounded-[25px] border-2 border-transparent focus:border-[#7cd6de] focus:bg-white transition-all text-xl text-right shadow-inner" value={formData.discoverySource} onChange={(e) => handleInputChange('discoverySource', e.target.value)} />
+                    <input type="text" placeholder="חברה, המלצה, גוגל..." className="w-full p-5 bg-slate-50 rounded-[25px] border-2 border-transparent focus:border-[#7cd6de] focus:bg-white transition-all text-xl text-right shadow-inner" value={formData.discoverySource} onChange={(e) => handleInputChange('discoverySource', e.target.value)} />
                   </div>
                 </div>
                 {error && <div className="bg-red-50 text-red-500 p-4 rounded-2xl text-center font-black border-r-4 border-red-500 animate-bounce">{error}</div>}
@@ -359,7 +359,7 @@ const SurveyForm = () => {
                   <CheckboxOption field="challenges" label="קושי במעקב אחר לידים" emoji="📞" />
                   <CheckboxOption field="challenges" label="עומס משימות חוזרות" emoji="🔄" />
                   <CheckboxOption field="challenges" label="חוסר זמינות 24/7" emoji="🕙" />
-                  <CheckboxOption field="challenges" label="קושי בהגדלת העסק (סקיילאביליטי)" emoji="📈" />
+                  <CheckboxOption field="challenges" label="קושי בהגדלת העסק" emoji="📈" />
                 </div>
               </div>
             )}
@@ -474,19 +474,19 @@ const SurveyForm = () => {
                 </div>
                 <div className="mt-12 space-y-4">
                    <p className="font-bold text-slate-700 text-2xl">תארו את התהליך שעוברים לידים שלא סגרו אתכם:</p>
-                   <textarea className="w-full p-6 bg-slate-50 rounded-[30px] border-2 border-transparent focus:border-[#7cd6de] focus:bg-white outline-none h-32 text-right text-xl shadow-inner transition-all" placeholder="..." value={formData.lostLeadsProcess} onChange={(e) => handleInputChange('lostLeadsProcess', e.target.value)} />
+                   <textarea className="w-full p-6 bg-slate-50 rounded-[30px] border-2 border-transparent focus:border-[#7cd6de] focus:bg-white outline-none h-32 text-right text-xl shadow-inner transition-all" placeholder="איך אתם מתמודדים עם לידים שלא הפכו ללקוחות?" value={formData.lostLeadsProcess} onChange={(e) => handleInputChange('lostLeadsProcess', e.target.value)} />
                 </div>
               </div>
             )}
 
             {currentStep === 8 && (
               <div className="space-y-10">
-                <div className="text-center mb-10"><h2 className="text-4xl font-black text-[#000ab9]">ציפיות מהאוטומציה</h2></div>
+                <div className="text-center mb-10"><h2 className="text-4xl font-black text-[#000ab9]">חזון האוטומציה בעסק</h2></div>
                 <div className="space-y-6">
-                  <p className="font-bold text-slate-700 text-2xl border-r-4 border-[#7cd6de] pr-4">מהן המטרות העיקריות מהכנסת אוטומציה?</p>
+                  <p className="font-bold text-slate-700 text-2xl border-r-4 border-[#7cd6de] pr-4">באילו תחומים הייתם רוצים שהאוטומציה תחליף את העבודה הידנית שלכם?</p>
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <CheckboxOption field="botGoals" label="מענה 24/7 ללקוחות" emoji="🕒" />
-                    <CheckboxOption field="botGoals" label="סינון וכישור לידים אוטומטי" emoji="🎯" />
+                    <CheckboxOption field="botGoals" label="זיהוי לידים איכותיים וסינון פניות לא מתאימות" emoji="🎯" />
                     <CheckboxOption field="botGoals" label="מענה לשאלות נפוצות" emoji="❓" />
                     <CheckboxOption field="botGoals" label="תיאום פגישות אוטומטי" emoji="📅" />
                     <CheckboxOption field="botGoals" label="שירות לקוחות בסיסי" emoji="🎧" />
@@ -586,14 +586,14 @@ const SurveyForm = () => {
                   <h2 className="text-4xl font-black text-[#000ab9]">חוויית משתמש וניסיון קודם</h2>
                 </div>
                 <div className="space-y-6 text-right mb-10">
-                  <p className="font-bold text-slate-700 text-2xl border-r-4 border-[#000ab9] pr-4">האם יש לכם ניסיון קודם עם בוטים או מערכות אוטומטיות?</p>
+                  <p className="font-bold text-slate-700 text-2xl border-r-4 border-[#000ab9] pr-4">האם התנסיתם בעבר בהטמעת מערכות אוטומטיות או שירות דיגיטלי?</p>
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <RadioOption field="priorExperience" label="כן, יש לנו ניסיון קודם" value="yes" />
                     <RadioOption field="priorExperience" label="לא, זה יהיה הבוט הראשון שלנו" value="no" />
                   </div>
                 </div>
                 <div className="space-y-6">
-                  <p className="font-bold text-slate-700 text-2xl border-r-4 border-[#000ab9] pr-4">איזה סוג של חוויית משתמש הייתם רוצים לספק בבוט שלכם?</p>
+                  <p className="font-bold text-slate-700 text-2xl border-r-4 border-[#000ab9] pr-4">איזה סוג של חוויית משתמש הייתם רוצים לספק ללקוחות שלכם?</p>
                   <textarea className="w-full p-8 bg-slate-50 rounded-[40px] border-2 border-transparent focus:border-[#7cd6de] focus:bg-white outline-none h-48 text-right text-xl shadow-inner transition-all" placeholder="לדוגמה: יחס אישי, מענה מהיר, מקצועיות, הומור וכו'..." value={formData.userExperienceGoal} onChange={(e) => handleInputChange('userExperienceGoal', e.target.value)} />
                 </div>
               </div>
