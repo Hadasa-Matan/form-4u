@@ -93,33 +93,78 @@ const SurveyForm = () => {
     setError('');
     
     try {
-      const templateParams = {
-        ...formData,
-        star_ratings: Object.entries(formData.starRatings)
-          .map(([q, r]) => `${q}: ${r}/5`)
-          .join('\n'),
+      // חלק את הנתונים לשני חלקים קטנים יותר
+      const basicInfo = {
+        contactName: formData.contactName,
+        email: formData.email,
+        phone: formData.phone,
+        businessName: formData.businessName,
+        businessSector: formData.businessSector,
+        discoverySource: formData.discoverySource,
         challenges: formData.challenges.join(', '),
         timeWasters: formData.timeWasters.join(', '),
         goals: formData.goals.join(', '),
+        successMetric: formData.successMetric
+      };
+
+      const detailedInfo = {
+        email: formData.email, // למזהה
         serviceManagement: formData.serviceManagement.join(', '),
         leadSources: formData.leadSources.join(', '),
         commonQuestions: formData.commonQuestions.join(', '),
+        monthlyLeads: formData.monthlyLeads,
         salesProcess: formData.salesProcess.join(', '),
+        responseTime: formData.responseTime,
+        lostLeadsProcess: formData.lostLeadsProcess,
         botGoals: formData.botGoals.join(', '),
-        botActiveTime: formData.botActiveTime.join(', ')
+        botActiveTime: formData.botActiveTime.join(', '),
+        star_ratings: Object.entries(formData.starRatings)
+          .map(([q, r]) => `${q}: ${r}/5`)
+          .join('\n'),
+        revenue: formData.revenue,
+        digitalPresence: formData.digitalPresence,
+        priorExperience: formData.priorExperience,
+        userExperienceGoal: formData.userExperienceGoal
       };
 
-      await emailjs.send(
-        'service_04u46mc',
-        'template_44cshno',
-        templateParams,
-        '0MvQ0-Daq0m7nbe2D'
-      );
+      // שלח את שני החלקים
+      await Promise.race([
+        emailjs.send(
+          'service_04u46mc',
+          'template_44cshno',
+          basicInfo,
+          '0MvQ0-Daq0m7nbe2D'
+        ),
+        new Promise((_, reject) => 
+          setTimeout(() => reject(new Error('Timeout')), 15000)
+        )
+      ]);
+
+      // נסה לשלוח את החלק השני (אם נכשל זה לא קריטי)
+      try {
+        await Promise.race([
+          emailjs.send(
+            'service_04u46mc',
+            'template_44cshno',
+            detailedInfo,
+            '0MvQ0-Daq0m7nbe2D'
+          ),
+          new Promise((_, reject) => 
+            setTimeout(() => reject(new Error('Timeout')), 15000)
+          )
+        ]);
+      } catch (e) {
+        console.log('שליחת חלק 2 נכשלה, אבל המידע הבסיסי נשלח');
+      }
       
       setIsSuccess(true);
       window.scrollTo({ top: 0, behavior: 'smooth' });
     } catch (err) {
-      setError('חלה שגיאה בשליחת הטופס. נא לבדוק את החיבור לאינטרנט ולנסות שוב.');
+      if (err.message === 'Timeout') {
+        setError('הבקשה לקחה זמן רב מדי. אנא נסו שוב או צרו איתנו קשר ישירות.');
+      } else {
+        setError('חלה שגיאה בשליחת הטופס. נא לבדוק את החיבור לאינטרנט ולנסות שוב.');
+      }
       console.error('EmailJS Error:', err);
     } finally {
       setIsSubmitting(false);
