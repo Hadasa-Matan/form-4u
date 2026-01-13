@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import emailjs from '@emailjs/browser';
 import {
@@ -7,8 +6,6 @@ import {
 } from 'lucide-react';
 
 const SurveyForm = () => {
-  const fontStyle = { fontFamily: '"FbAsparagos", sans-serif' };
-
   const [formData, setFormData] = useState({
     contactName: '',
     email: '',
@@ -179,7 +176,21 @@ const SurveyForm = () => {
   if (isSuccess) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-[#f8fafc] p-4 text-right" dir="rtl">
-        <style>{`* { font-family: "FbAsparagos", sans-serif !important; }`}</style>
+        <style>{`
+          @font-face {
+            font-family: 'FbAsparagos';
+            src: url('./fonts/FbAsparagos-Regular.ttf') format('truetype');
+            font-weight: normal;
+            font-style: normal;
+          }
+          @font-face {
+            font-family: 'FbAsparagos';
+            src: url('./fonts/FbAsparagos-Bold.ttf') format('truetype');
+            font-weight: bold;
+            font-style: normal;
+          }
+          * { font-family: 'FbAsparagos', sans-serif !important; }
+        `}</style>
         <div className="bg-white p-12 rounded-[40px] shadow-2xl text-center max-w-2xl w-full border-t-[12px] border-[#52de4a] animate-in zoom-in duration-500">
           <div className="mb-8 bg-green-50 w-28 h-28 rounded-full flex items-center justify-center mx-auto shadow-inner">
             <CheckCircle2 size={70} className="text-[#52de4a]" />
@@ -198,19 +209,31 @@ const SurveyForm = () => {
   }
 
   return (
-    <div className="min-h-screen py-12 px-4 bg-[#f8fafc] selection:bg-blue-100" dir="rtl" style={fontStyle}>
+    <div className="min-h-screen py-12 px-4 bg-[#f8fafc] selection:bg-blue-100" dir="rtl">
       <style>{`
-        * { font-family: "FbAsparagos", sans-serif !important; }
-        input::placeholder, textarea::placeholder { font-family: "FbAsparagos", sans-serif !important; }
+        @font-face {
+          font-family: 'FbAsparagos';
+          src: url('./fonts/FbAsparagos-Regular.ttf') format('truetype');
+          font-weight: normal;
+          font-style: normal;
+        }
+        @font-face {
+          font-family: 'FbAsparagos';
+          src: url('./fonts/FbAsparagos-Bold.ttf') format('truetype');
+          font-weight: bold;
+          font-style: normal;
+        }
+        * { font-family: 'FbAsparagos', sans-serif !important; }
+        input::placeholder, textarea::placeholder { font-family: 'FbAsparagos', sans-serif !important; }
         button, input, select, textarea { outline: none !important; }
       `}</style>
       
       <div className="max-w-4xl mx-auto">
         {currentStep > 0 && (
           <div className="mb-10 px-4">
-            <div className="flex justify-between items-end mb-4 font-bold text-[#000ab9]">
-              <span className="text-2xl font-black italic tracking-tight">הדסה מתן | אבחון עסק חכם</span>
-              <span className="text-base bg-blue-100 px-4 py-1.5 rounded-full shadow-sm">שלב {currentStep} מתוך {totalSteps}</span>
+            <div className="flex justify-between items-center mb-4">
+              <span className="text-2xl font-black text-[#000ab9]">הדסה מתן | אבחון עסק חכם</span>
+              <span className="text-base font-bold bg-blue-100 px-4 py-1.5 rounded-full shadow-sm text-[#000ab9]">שלב {currentStep} מתוך {totalSteps}</span>
             </div>
             <div className="h-4 w-full bg-white rounded-full shadow-inner border border-slate-100 overflow-hidden p-1">
               <div 
@@ -229,10 +252,11 @@ const SurveyForm = () => {
             {currentStep === 0 && (
               <div className="space-y-8 leading-relaxed text-slate-700">
                 <div className="text-center mb-10">
-                  <div className="bg-blue-50 w-24 h-24 rounded-3xl flex items-center justify-center mx-auto mb-6 transform rotate-12 shadow-sm">
-                    <Zap size={50} className="text-[#000ab9] animate-pulse" />
+                  <div className="bg-gradient-to-br from-blue-50 to-blue-100 w-32 h-32 rounded-3xl flex items-center justify-center mx-auto mb-6 shadow-lg relative">
+                    <div className="absolute inset-0 bg-blue-200 rounded-3xl opacity-20 animate-pulse"></div>
+                    <Zap size={60} className="text-[#000ab9] relative z-10" />
                   </div>
-                  <h1 className="text-5xl font-black text-[#000ab9] mt-4 tracking-tighter">שאלון לאבחון העסק 🤖</h1>
+                  <h1 className="text-5xl font-black text-[#000ab9] mt-4 tracking-tight">שאלון לאבחון העסק 🤖</h1>
                 </div>
                 <h2 className="text-4xl font-bold text-slate-800">היי 😄</h2>
                 <p className="text-2xl italic font-medium leading-relaxed">אנחנו יודעים שאתם עמוסים – אולי בין לקוח לשיחה 📞, אולי רגע לפני הפסקת קפה ☕,</p>
