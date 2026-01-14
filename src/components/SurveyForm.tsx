@@ -127,35 +127,24 @@ const SurveyForm = () => {
         userExperienceGoal: formData.userExperienceGoal
       };
 
-      // שלח את שני החלקים
-      await Promise.race([
-        emailjs.send(
-          'service_w75vmod',
-          'template_206bp7e',
-          basicInfo,
-          'krNFSrf3lJxEvj1R9'
-        ),
-        new Promise((_, reject) => 
-          setTimeout(() => reject(new Error('Timeout')), 15000)
-        )
-      ]);
+     // איחוד כל המידע למייל אחד
+const mergedInfo = {
+  ...basicInfo,
+  ...detailedInfo,
+  // אם יש התנגשות שמות – האחרון מנצח
+};
 
-      // נסה לשלוח את החלק השני (אם נכשל זה לא קריטי)
-      try {
-        await Promise.race([
-          emailjs.send(
-            'service_w75vmod',
-            'template_206bp7e',
-            detailedInfo,
-            'krNFSrf3lJxEvj1R9'
-          ),
-          new Promise((_, reject) => 
-            setTimeout(() => reject(new Error('Timeout')), 15000)
-          )
-        ]);
-      } catch (e) {
-        console.log('שליחת חלק 2 נכשלה, אבל המידע הבסיסי נשלח');
-      }
+await Promise.race([
+  emailjs.send(
+    'service_w75vmod',
+    'template_206bp7e',
+    mergedInfo,
+    'krNFSrf3lJxEvj1R9'
+  ),
+  new Promise((_, reject) =>
+    setTimeout(() => reject(new Error('Timeout')), 15000)
+  )
+]);
       
       setIsSuccess(true);
       window.scrollTo({ top: 0, behavior: 'smooth' });
