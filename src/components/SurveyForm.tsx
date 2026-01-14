@@ -130,10 +130,10 @@ const SurveyForm = () => {
       // שלח את שני החלקים
       await Promise.race([
         emailjs.send(
-          'service_04u46mc',
-          'template_44cshno',
+          'service_w75vmod',
+          'template_206bp7e',
           basicInfo,
-          '0MvQ0-Daq0m7nbe2D'
+          'krNFSrf3lJxEvj1R9'
         ),
         new Promise((_, reject) => 
           setTimeout(() => reject(new Error('Timeout')), 15000)
@@ -144,10 +144,10 @@ const SurveyForm = () => {
       try {
         await Promise.race([
           emailjs.send(
-            'service_04u46mc',
-            'template_44cshno',
+            'service_w75vmod',
+            'template_206bp7e',
             detailedInfo,
-            '0MvQ0-Daq0m7nbe2D'
+            'krNFSrf3lJxEvj1R9'
           ),
           new Promise((_, reject) => 
             setTimeout(() => reject(new Error('Timeout')), 15000)
