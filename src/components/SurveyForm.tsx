@@ -244,7 +244,7 @@ const SurveyForm = () => {
           <div className="space-y-6 text-slate-600 text-2xl font-medium leading-relaxed">
             <p>תודה רבה על השיתוף ועל הזמן שהקדשת.</p>
             <div className="bg-blue-50 p-8 rounded-[30px] border-r-8 border-[#000ab9] text-[#000ab9] font-bold shadow-sm">
-              ב-24 השעות הקרובות ישלח אליך סיכום האבחון המלא יחד עם המלצות ראשוניות לייעול והטמעת בינה מלאכותית בעסק שלך. 🚀
+              ב-24 השעות הקרובות ישלח אליך סיכום האבחון המלא יחד עם המלצות ראשוניות לייעול והטמעת פתרונות טכנולוגיים בעסק שלך. 🚀
             </div>
             <p className="text-lg text-slate-400 italic">נתראה בקרוב!</p>
           </div>
@@ -589,7 +589,7 @@ const SurveyForm = () => {
                   <p className="font-bold text-slate-700 text-2xl border-r-4 border-[#000ab9] pr-4">האם התנסיתם בעבר בהטמעת מערכות אוטומטיות או שירות דיגיטלי?</p>
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <RadioOption field="priorExperience" label="כן, יש לנו ניסיון קודם" value="yes" />
-                    <RadioOption field="priorExperience" label="לא, זה יהיה הפעם הראשונה שלנו" value="no" />
+                    <RadioOption field="priorExperience" label="לא, זו תיהיה הפעם הראשונה שלנו" value="no" />
                   </div>
                 </div>
                 <div className="space-y-6">
