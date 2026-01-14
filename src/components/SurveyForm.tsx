@@ -589,12 +589,12 @@ const SurveyForm = () => {
                   <p className="font-bold text-slate-700 text-2xl border-r-4 border-[#000ab9] pr-4">האם התנסיתם בעבר בהטמעת מערכות אוטומטיות או שירות דיגיטלי?</p>
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <RadioOption field="priorExperience" label="כן, יש לנו ניסיון קודם" value="yes" />
-                    <RadioOption field="priorExperience" label="לא, זה יהיה הבוט הראשון שלנו" value="no" />
+                    <RadioOption field="priorExperience" label="לא, זה יהיה הפעם הראשונה שלנו" value="no" />
                   </div>
                 </div>
                 <div className="space-y-6">
-                  <p className="font-bold text-slate-700 text-2xl border-r-4 border-[#000ab9] pr-4">איזה סוג של חוויית משתמש הייתם רוצים לספק ללקוחות שלכם?</p>
-                  <textarea className="w-full p-8 bg-slate-50 rounded-[40px] border-2 border-transparent focus:border-[#7cd6de] focus:bg-white outline-none h-48 text-right text-xl shadow-inner transition-all" placeholder="לדוגמה: יחס אישי, מענה מהיר, מקצועיות, הומור וכו'..." value={formData.userExperienceGoal} onChange={(e) => handleInputChange('userExperienceGoal', e.target.value)} />
+                  <p className="font-bold text-slate-700 text-2xl border-r-4 border-[#000ab9] pr-4">יש עוד משהו שתרצו לשתף אותנו? א</p>
+                  <textarea className="w-full p-8 bg-slate-50 rounded-[40px] border-2 border-transparent focus:border-[#7cd6de] focus:bg-white outline-none h-48 text-right text-xl shadow-inner transition-all" placeholder="הבמה שלכם: ספרו לנו על כל משימה ידנית שהייתם רוצים להפוך לאוטומטית, או שתפו אותנו בכל פרט נוסף שיוכל לעזור לנו לדייק את הפתרון עבורכם." value={formData.userExperienceGoal} onChange={(e) => handleInputChange('userExperienceGoal', e.target.value)} />
                 </div>
               </div>
             )}
